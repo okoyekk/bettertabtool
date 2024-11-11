@@ -1,11 +1,16 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const CopyWebpackPlugin = require('copy-webpack-plugin');
 
 module.exports = {
-    entry: './src/popup/index.tsx',
+    entry: {
+        popup: './src/popup/index.tsx',
+        background: './src/background/index.ts',
+    },
+
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'popup.js'
+        filename: '[name].js'
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js']
@@ -23,6 +28,11 @@ module.exports = {
         new HtmlWebpackPlugin({
             template: './src/popup/index.html',
             filename: 'popup.html'
+        }),
+        new CopyWebpackPlugin({
+            patterns: [
+                {from: 'manifest.json', to: 'manifest.json'} // Copy manifest from top level to dist/
+            ]
         })
     ],
     devServer: {
