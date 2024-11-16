@@ -1,6 +1,6 @@
-const path = require('path')
-const HtmlWebpackPlugin = require('html-webpack-plugin')
-const CopyWebpackPlugin = require('copy-webpack-plugin')
+const path = require('path');
+const HtmlPlugin = require('html-webpack-plugin');
+const CopyPlugin = require('copy-webpack-plugin');
 
 module.exports = {
     entry: {
@@ -25,13 +25,14 @@ module.exports = {
         ],
     },
     plugins: [
-        new HtmlWebpackPlugin({
+        new HtmlPlugin({
             template: './src/popup/index.html',
             filename: 'popup.html',
         }),
-        new CopyWebpackPlugin({
+        new CopyPlugin({
             patterns: [
                 { from: 'manifest.json', to: 'manifest.json' }, // Copy manifest from top level to dist/
+                { from: 'src/assets', to: 'assets' },
             ],
         }),
     ],
@@ -42,4 +43,4 @@ module.exports = {
         compress: true,
         port: 9000,
     },
-}
+};

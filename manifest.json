@@ -2,7 +2,13 @@
     "manifest_version": 3,
     "name": "BetterTabTool",
     "version": "0.1.0",
-    "permissions": ["tabs", "storage", "clipboardWrite", "scripting"],
+    "permissions": [
+        "tabs",
+        "storage",
+        "clipboardWrite",
+        "scripting",
+        "notifications"
+    ],
     "host_permissions": ["<all_urls>"],
     "background": {
         "service_worker": "background.js"
