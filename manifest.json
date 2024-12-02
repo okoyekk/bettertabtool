@@ -4,11 +4,18 @@
     "version": "0.1.0",
     "permissions": [
         "tabs",
+        "windows",
         "storage",
         "clipboardWrite",
         "scripting",
-        "notifications"
+        "notifications",
+        "contextMenus"
     ],
+    "icons": {
+        "16": "assets/placeholder-16.png",
+        "48": "assets/placeholder-48.png",
+        "128": "assets/placeholder-128.png"
+    },
     "host_permissions": ["<all_urls>"],
     "background": {
         "service_worker": "background.js"

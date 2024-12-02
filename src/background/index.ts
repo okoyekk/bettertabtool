@@ -1,5 +1,12 @@
 chrome.runtime.onInstalled.addListener(() => {
     console.log('BetterTabTool installed');
+
+    // Create when a link is right clicked
+    chrome.contextMenus.create({
+        id: "open-link-in-specific-window",
+        title: "Open Link in Specific Window",
+        contexts: ["link"],
+    });
 });
 
 // Copy the current tab's URL to clipboard
@@ -43,3 +50,21 @@ chrome.commands.onCommand.addListener(async (command) => {
         }
     }
 });
+
+// Open a link in a specific window
+chrome.contextMenus.onClicked.addListener((info, tab) => {
+    if (info.menuItemId === "open-link-in-specific-window") {
+        const linkUrl = info.linkUrl;
+        if (!linkUrl) {
+            console.error('No link URL found');
+            return;
+        }
+
+        // Get all open windows and log them
+        let windows = chrome.windows.getAll({ populate: true });
+        console.log(windows);
+        // TODO: Open link in a specific window
+        // Currently opens as popup
+        chrome.windows.create({ url: linkUrl, type: 'normal' });
+    }
+})
