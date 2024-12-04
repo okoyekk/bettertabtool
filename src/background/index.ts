@@ -11,13 +11,25 @@ chrome.runtime.onInstalled.addListener(() => {
     updateContextMenu();
 });
 
-// TODO: this is gross, find a cleaner way to update context menus
-chrome.tabs.onCreated.addListener(updateContextMenu);
-chrome.tabs.onUpdated.addListener(updateContextMenu);
-chrome.tabs.onMoved.addListener(updateContextMenu);
-chrome.tabs.onAttached.addListener(updateContextMenu);
-chrome.tabs.onDetached.addListener(updateContextMenu);
-chrome.tabs.onRemoved.addListener(updateContextMenu);
+const updateContextMenuTabEvents: (keyof typeof chrome.tabs)[] = [
+    'onActivated',
+    'onAttached',
+    'onCreated',
+    'onDetached',
+    'onMoved',
+    'onRemoved',
+    'onUpdated',
+];
+
+function registerContextMenuTabEventListeners() {
+    updateContextMenuTabEvents.forEach((event) => {
+        const tabEvent = chrome.tabs[event] as chrome.events.Event<any>;
+        tabEvent.addListener(updateContextMenu)
+    });
+}
+
+registerContextMenuTabEventListeners();
+
 
 // Copy the current tab's URL to clipboard
 chrome.commands.onCommand.addListener(async (command) => {
@@ -61,16 +73,21 @@ chrome.commands.onCommand.addListener(async (command) => {
     }
 });
 
+function getActiveTab(window: chrome.windows.Window) {
+    return window.tabs?.filter((tab) => tab.active)[0];
+}
+
 // Update the context menu item with information about all open windows
 function updateContextMenu() {
     chrome.windows.getAll({ populate: true }).then((windows: chrome.windows.Window[]) => {
         const windowIdToDescription = new Map<number, string>();
-        // Map window ids to descriptions of form: [id, "{first tab title}(...) and X other tabs"]
-        // TODO(Maybe?): Use the active tab and not the first one
+
         windows.forEach((window: chrome.windows.Window) => {
+            console.log(window.tabs);
+
             if (window.tabs) {
-                // map window id to description in windowIdToDescription
-                let description = `${window.tabs[0].title}`;
+                // Map window ids to descriptions of form: [id, "{first tab title}(...) and X other tabs"]
+                let description = `${getActiveTab(window)?.title}`;
                 // Shorten description if it's too long
                 if (description.length > 40) {
                     description = description.substring(0, 40) + '...';
