@@ -63,35 +63,26 @@ chrome.commands.onCommand.addListener(async (command) => {
 
 // Update the context menu item with information about all open windows
 function updateContextMenu() {
-    // Get all open windows and log them
     chrome.windows.getAll({ populate: true }).then((windows: chrome.windows.Window[]) => {
-        const windowIdToTabs = new Map<number, chrome.tabs.Tab[]>();
-        windows.forEach((window: chrome.windows.Window) => {
-            if (window.tabs) {
-                window.tabs.forEach((tab: chrome.tabs.Tab) => {
-                    windowIdToTabs.has(window.id!) || windowIdToTabs.set(window.id!, []);
-                    windowIdToTabs.get(window.id!)!.push(tab);
-                })
-            }
-        });
-        // console.log(windowIdToTabs);
-
+        const windowIdToDescription = new Map<number, string>();
         // Map window ids to descriptions of form: [id, "{first tab title}(...) and X other tabs"]
         // TODO(Maybe?): Use the active tab and not the first one
-        const windowIdToDescription = new Map<number, string>();
-        windowIdToTabs.forEach((tabs: chrome.tabs.Tab[], windowId: number) => {
-            let description = `${tabs[0].title}`;
-            // Shorten description if it's too long
-            if (description.length > 40) {
-                description = description.substring(0, 40) + '...';
+        windows.forEach((window: chrome.windows.Window) => {
+            if (window.tabs) {
+                // map window id to description in windowIdToDescription
+                let description = `${window.tabs[0].title}`;
+                // Shorten description if it's too long
+                if (description.length > 40) {
+                    description = description.substring(0, 40) + '...';
+                }
+
+                // Add number of other tabs in window
+                if (window.tabs.length > 1) {
+                    description = description.concat(` and ${window.tabs.length - 1} other tab${window.tabs.length > 2 ? 's' : ''}`);
+                }
+                windowIdToDescription.set(window.id!, description);
             }
-            // Add number of other tabs in window
-            if (tabs.length > 1) {
-                description = description.concat(` and ${windowIdToTabs.get(windowId)!.length - 1} other tabs`);
-            }
-            windowIdToDescription.set(windowId, description);
-        })
-        // console.log(windowIdToDescription);
+        });
 
         // Remove all context menu items and recreate "Open Link in Specific Window"
         chrome.contextMenus.removeAll();
