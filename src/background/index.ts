@@ -30,6 +30,26 @@ function registerContextMenuTabEventListeners() {
 
 registerContextMenuTabEventListeners();
 
+const contextMenuClickHandler = (info: chrome.contextMenus.OnClickData, tab?: chrome.tabs.Tab) => {
+    const windowIdMatcher = info.menuItemId.toString().match(/^open-link-in-specific-window-(\d+)$/);
+    if (windowIdMatcher) {
+        const windowId = parseInt(windowIdMatcher[1]);
+        const linkUrl = info.linkUrl
+
+        if (!linkUrl) {
+            console.error('No link URL found');
+            return;
+        }
+
+        //  Open link in a specific window
+        chrome.tabs.create({
+            url: linkUrl,
+            windowId: windowId,
+            active: true,
+        })
+        console.log(`Opened link ${linkUrl} in window ${windowId}`);
+    }
+}
 
 // Copy the current tab's URL to clipboard
 chrome.commands.onCommand.addListener(async (command) => {
@@ -79,11 +99,14 @@ function getActiveTab(window: chrome.windows.Window) {
 
 // Update the context menu item with information about all open windows
 function updateContextMenu() {
+    // Remove existing context menu listeners
+    chrome.contextMenus.onClicked.removeListener(contextMenuClickHandler);
+
     chrome.windows.getAll({ populate: true }).then((windows: chrome.windows.Window[]) => {
         const windowIdToDescription = new Map<number, string>();
 
         windows.forEach((window: chrome.windows.Window) => {
-            console.log(window.tabs);
+            console.log("updateContextMenu tabs: ", window.tabs);
 
             if (window.tabs) {
                 // Map window ids to descriptions of form: [id, "{first tab title}(...) and X other tabs"]
@@ -119,23 +142,9 @@ function updateContextMenu() {
                 parentId: "open-link-in-specific-window",
             });
 
+            // TODO(future): Add a user prefs page to control whether to set the new tab as active (or focus it).
             // Add click listener to open link in specific window
-            chrome.contextMenus.onClicked.addListener((info, _tab) => {
-                if (info.menuItemId === `open-link-in-specific-window-${windowId}`) {
-                    const linkUrl = info.linkUrl;
-                    if (!linkUrl) {
-                        console.error('No link URL found');
-                        return;
-                    }
-                    //  Open link in a specific window
-                    chrome.tabs.create({
-                        url: linkUrl,
-                        windowId: windowId,
-                        active: true,
-                    })
-                    // TODO(future): Add a user prefs page to control whether to set the new tab as active (or focus it).
-                }
-            })
+            chrome.contextMenus.onClicked.addListener(contextMenuClickHandler)
         })
     });
 }
