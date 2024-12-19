@@ -30,6 +30,12 @@
                 "default": "Ctrl+Shift+L"
             },
             "description": "Copy current tab URL"
+        },
+        "open-new-tab-in-current-group": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+K"
+            },
+            "description": "Open new tab in current group"
         }
     }
 }
