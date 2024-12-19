@@ -1,3 +1,7 @@
+import { ClipboardService } from "./services/clipboard.service";
+
+const clipboardService = new ClipboardService();
+
 chrome.runtime.onInstalled.addListener(() => {
     console.log('BetterTabTool installed');
 
@@ -67,38 +71,7 @@ function getActiveTabInWindow(window: chrome.windows.Window) {
 chrome.commands.onCommand.addListener(async (command) => {
     // Copy the current tab's URL to clipboard
     if (command === 'copy-current-tab-url') {
-        try {
-            const tab = await getActiveTabInCurrentWindow();
-
-            if (!tab?.url || !tab.id) {
-                console.error('No URL or id found for current tab');
-                return;
-            }
-
-            // Copy URL to clipboard via scripting
-            await chrome.scripting.executeScript({
-                target: { tabId: tab.id },
-                func: (url) => {
-                    navigator.clipboard.writeText(url);
-                },
-                args: [tab.url],
-            });
-
-            console.log('URL copied to clipboard');
-
-            chrome.notifications.create(
-                'current-tab-url-created',
-                {
-                    type: 'basic',
-                    iconUrl: '../assets/placeholder.png',
-                    title: 'BetterTabTool',
-                    message: 'Link copied to clipboard!',
-                },
-                function () { }
-            );
-        } catch (err) {
-            console.error('Error copying URL to clipboard: ', err);
-        }
+        clipboardService.copyCurrentTabUrl();
     } else if (command === 'open-new-tab-in-current-group') {
         try {
             const tab = await getActiveTabInCurrentWindow();
