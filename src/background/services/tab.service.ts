@@ -11,7 +11,7 @@ export class TabService {
             currentWindow: true,
         })) as [chrome.tabs.Tab];
 
-        return tab
+        return tab;
     }
 
     /**
@@ -40,10 +40,10 @@ export class TabService {
 
             // Open a new tab
             console.log(`Opening new tab in current group`);
-            const newTab = await chrome.tabs.create({
+            const newTab = (await chrome.tabs.create({
                 openerTabId: tab.id,
                 active: true,
-            }) as chrome.tabs.Tab;
+            })) as chrome.tabs.Tab;
 
             if (!newTab.id) {
                 console.error('No id found for new tab');
@@ -64,10 +64,8 @@ export class TabService {
             chrome.tabs.group({
                 tabIds: [newTab.id],
                 groupId: currentGroupId,
-            })
-
-        }
-        catch (err) {
+            });
+        } catch (err) {
             console.error('Error opening new tab in current group: ', err);
         }
     }

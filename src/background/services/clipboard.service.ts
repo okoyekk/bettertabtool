@@ -1,7 +1,7 @@
-import { TabService } from "./tab.service";
+import { TabService } from './tab.service';
 
 export class ClipboardService {
-    constructor(private tabService: TabService) { }
+    constructor(private tabService: TabService) {}
 
     /**
      * Asynchronously copies the URL of the current tab to the clipboard.
@@ -45,7 +45,7 @@ export class ClipboardService {
                 title: 'BetterTabTool',
                 message: 'Link copied to clipboard!',
             },
-            () => { }
+            () => {}
         );
     }
 }
