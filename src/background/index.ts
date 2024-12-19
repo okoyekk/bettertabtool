@@ -1,6 +1,9 @@
 import { ClipboardService } from "./services/clipboard.service";
+import { TabService } from "./services/tab.service";
 
-const clipboardService = new ClipboardService();
+
+const tabService = new TabService();
+const clipboardService = new ClipboardService(tabService);
 
 chrome.runtime.onInstalled.addListener(() => {
     console.log('BetterTabTool installed');
@@ -55,64 +58,12 @@ const contextMenuClickHandler = (info: chrome.contextMenus.OnClickData, tab?: ch
     }
 }
 
-async function getActiveTabInCurrentWindow(): Promise<chrome.tabs.Tab> {
-    const [tab] = (await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-    })) as [chrome.tabs.Tab];
-
-    return tab
-}
-
-function getActiveTabInWindow(window: chrome.windows.Window) {
-    return window.tabs?.filter((tab) => tab.active)[0];
-}
-
 chrome.commands.onCommand.addListener(async (command) => {
     // Copy the current tab's URL to clipboard
     if (command === 'copy-current-tab-url') {
         clipboardService.copyCurrentTabUrl();
     } else if (command === 'open-new-tab-in-current-group') {
-        try {
-            const tab = await getActiveTabInCurrentWindow();
-
-            if (!tab?.url || !tab.id) {
-                console.error('No URL or id found for current tab');
-                return;
-            }
-
-            // Open a new tab
-            console.log(`Opening new tab in current group`);
-            const newTab = await chrome.tabs.create({
-                openerTabId: tab.id,
-                active: true,
-            }) as chrome.tabs.Tab;
-
-            if (!newTab.id) {
-                console.error('No id found for new tab');
-                return;
-            }
-
-            let currentGroupId = tab.groupId;
-            // Create a group with just the current tab if one doesn't exist already
-            if (currentGroupId === -1) {
-                console.log(`Creating a new group with current tab`);
-                currentGroupId = await chrome.tabs.group({
-                    tabIds: [tab.id],
-                });
-            }
-            // Add the new tab to the group
-            console.log(`Adding new tab to group ${currentGroupId}`);
-            newTab.groupId = currentGroupId;
-            chrome.tabs.group({
-                tabIds: [newTab.id],
-                groupId: currentGroupId,
-            })
-
-        }
-        catch (err) {
-            console.error('Error opening new tab in current group: ', err);
-        }
+        tabService.openNewTabInCurrentGroup();
     };
 });
 
@@ -129,7 +80,7 @@ function updateContextMenu() {
 
             if (window.tabs) {
                 // Map window ids to descriptions of form: [id, "{first tab title}(...) and X other tabs"]
-                let description = `${getActiveTabInWindow(window)?.title}`;
+                let description = `${tabService.getActiveTabInWindow(window)?.title}`;
                 // Shorten description if it's too long
                 if (description.length > 40) {
                     description = description.substring(0, 40) + '...';

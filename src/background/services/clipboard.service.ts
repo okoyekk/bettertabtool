@@ -1,21 +1,17 @@
-async function getActiveTabInCurrentWindow(): Promise<chrome.tabs.Tab> {
-    // TODO: Move into tabService
-    const [tab] = (await chrome.tabs.query({
-        active: true,
-        currentWindow: true,
-    })) as [chrome.tabs.Tab];
-
-    return tab
-}
+import { TabService } from "./tab.service";
 
 export class ClipboardService {
-    constructor() {
-        // TODO: Should eventually take in a tabService
-    }
+    constructor(private tabService: TabService) { }
 
+    /**
+     * Asynchronously copies the URL of the current tab to the clipboard.
+     *
+     * @async
+     * @returns {Promise<void>} Promise that resolves once the URL is copied to the clipboard
+     */
     async copyCurrentTabUrl(): Promise<void> {
         try {
-            const tab = await getActiveTabInCurrentWindow();
+            const tab = await this.tabService.getActiveTabInCurrentWindow();
 
             if (!tab?.url || !tab.id) {
                 console.error('No URL or id found for current tab');
@@ -37,6 +33,9 @@ export class ClipboardService {
         }
     }
 
+    /**
+     * Shows a native notification when a link is copied to the clipboard.
+     */
     private showCopyNotification() {
         chrome.notifications.create(
             'current-tab-url-created',
