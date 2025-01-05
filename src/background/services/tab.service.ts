@@ -34,12 +34,10 @@ export class TabService {
     async openNewTabInGroup(url?: string, groupId?: number) {
         try {
             const tab = await this.getActiveTabInCurrentWindow();
-
             if (!tab?.url || !tab.id) {
                 console.error('No URL or id found for current tab');
                 return;
             }
-
             // Use provided group id if passed in, else add to current group
             let currentGroupId = groupId ? groupId : tab.groupId;
 
@@ -55,7 +53,6 @@ export class TabService {
                 console.error('No id found for new tab');
                 return;
             }
-
             // Create a group with just the current tab if one doesn't exist already
             if (currentGroupId === -1) {
                 console.log(`Creating a new group with current tab`);
