@@ -52,7 +52,7 @@ export class ContextMenuService {
                 windowId: windowId,
                 active: true,
             });
-            console.log(`Opened link ${linkUrl} in window ${windowId}`);
+            // console.log(`Opened link ${linkUrl} in window ${windowId}`);
         }
 
         //  Open link in a specific group
@@ -62,7 +62,7 @@ export class ContextMenuService {
         if (groupIdMatcher) {
             const groupId = parseInt(groupIdMatcher[1]);
             this.tabService.openNewTabInGroup(linkUrl, groupId);
-            console.log(`Opened link ${linkUrl} in group ${groupId}`);
+            // console.log(`Opened link ${linkUrl} in group ${groupId}`);
         }
     };
 

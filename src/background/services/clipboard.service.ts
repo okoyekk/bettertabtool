@@ -26,7 +26,7 @@ export class ClipboardService {
                 args: [tab.url],
             });
 
-            console.log(`URL ${tab.url} copied to clipboard`);
+            // console.log(`URL ${tab.url} copied to clipboard`);
             this.showCopyNotification();
         } catch (err) {
             console.error('Error copying URL to clipboard: ', err);

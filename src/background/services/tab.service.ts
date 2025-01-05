@@ -42,7 +42,7 @@ export class TabService {
             let currentGroupId = groupId ? groupId : tab.groupId;
 
             // Create a new tab
-            console.log(`Creating new tab in group (${currentGroupId})`);
+            // console.log(`Creating new tab in group (${currentGroupId})`);
             const newTab = (await chrome.tabs.create({
                 openerTabId: tab.id,
                 active: true,
@@ -55,13 +55,13 @@ export class TabService {
             }
             // Create a group with just the current tab if one doesn't exist already
             if (currentGroupId === -1) {
-                console.log(`Creating a new group with current tab`);
+                // console.log(`Creating a new group with current tab`);
                 currentGroupId = await chrome.tabs.group({
                     tabIds: [tab.id],
                 });
             }
             // Add the new tab to the group
-            console.log(`Adding new tab to group ${currentGroupId}`);
+            // console.log(`Adding new tab to group ${currentGroupId}`);
             newTab.groupId = currentGroupId;
             chrome.tabs.group({
                 tabIds: [newTab.id],

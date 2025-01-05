@@ -7,7 +7,7 @@ const clipboardService = new ClipboardService(tabService);
 const contextMenuService = new ContextMenuService(tabService);
 
 chrome.runtime.onInstalled.addListener(() => {
-    console.log('BetterTabTool installed');
+    console.log('BetterTabTool installed!');
     contextMenuService.init();
 });
 
