@@ -24,12 +24,14 @@ export class TabService {
         return window.tabs?.filter((tab) => tab.active)[0];
     }
     /**
-     * A function that creates a new tab in the current group based on the active tab.
+     * A function that creates a new tab in a specified group.
      *
      * @async
+     * @param {string} url - The URL to open in the new tab
+     * @param {number} groupId - The ID of the group to open the new tab in
      * @returns {Promise<void>}
      */
-    async openNewTabInCurrentGroup() {
+    async openNewTabInGroup(url?: string, groupId?: number) {
         try {
             const tab = await this.getActiveTabInCurrentWindow();
 
@@ -38,11 +40,15 @@ export class TabService {
                 return;
             }
 
-            // Open a new tab
-            console.log(`Opening new tab in current group`);
+            // Use provided group id if passed in, else add to current group
+            let currentGroupId = groupId ? groupId : tab.groupId;
+
+            // Create a new tab
+            console.log(`Creating new tab in group (${currentGroupId})`);
             const newTab = (await chrome.tabs.create({
                 openerTabId: tab.id,
                 active: true,
+                url: url ? url : 'chrome://new-tab-page',
             })) as chrome.tabs.Tab;
 
             if (!newTab.id) {
@@ -50,7 +56,6 @@ export class TabService {
                 return;
             }
 
-            let currentGroupId = tab.groupId;
             // Create a group with just the current tab if one doesn't exist already
             if (currentGroupId === -1) {
                 console.log(`Creating a new group with current tab`);

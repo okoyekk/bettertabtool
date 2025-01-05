@@ -20,6 +20,6 @@ chrome.commands.onCommand.addListener(async (command) => {
     if (command === 'copy-current-tab-url') {
         clipboardService.copyCurrentTabUrl();
     } else if (command === 'open-new-tab-in-current-group') {
-        tabService.openNewTabInCurrentGroup();
+        tabService.openNewTabInGroup();
     }
 });
