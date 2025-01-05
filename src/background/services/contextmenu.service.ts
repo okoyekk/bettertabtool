@@ -4,16 +4,18 @@ export class ContextMenuService {
     constructor(private readonly tabService: TabService) {}
 
     /**
-     * Initializes the context menu service by creating the "open link in specific window"
-     * context menu item and registering tab event listeners.
+     * Initializes the context menu service by removing all existing context menus,
+     * creating new context menu items and registering tab and tab group event listeners.
      *
      */
     init() {
-        this.createOpenLinkContextMenu();
+        chrome.contextMenus.removeAll();
+        this.createOpenLinkInWindowContextMenu();
         this.registerTabEventListeners();
+        this.registerTabGroupEventListeners();
     }
 
-    private createOpenLinkContextMenu() {
+    private createOpenLinkInWindowContextMenu() {
         chrome.contextMenus.create({
             id: 'open-link-in-specific-window',
             title: 'Open Link in Specific Window',
@@ -21,33 +23,50 @@ export class ContextMenuService {
         });
     }
 
+    private createOpenLinkInGroupContextMenu() {
+        chrome.contextMenus.create({
+            id: 'open-link-in-specific-group',
+            title: 'Open Link in Specific Group',
+            contexts: ['link'],
+        });
+    }
+
     private contextMenuClickHandler = (
         info: chrome.contextMenus.OnClickData,
-        tab?: chrome.tabs.Tab
+        _tab?: chrome.tabs.Tab
     ) => {
+        const linkUrl = info.linkUrl;
+        if (!linkUrl) {
+            console.error('No link URL found');
+            return;
+        }
+
+        //  Open link in a specific window
         const windowIdMatcher = info.menuItemId
             .toString()
             .match(/^open-link-in-specific-window-(\d+)$/);
         if (windowIdMatcher) {
             const windowId = parseInt(windowIdMatcher[1]);
-            const linkUrl = info.linkUrl;
-
-            if (!linkUrl) {
-                console.error('No link URL found');
-                return;
-            }
-
-            //  Open link in a specific window
             chrome.tabs.create({
                 url: linkUrl,
                 windowId: windowId,
                 active: true,
             });
-            console.log(`Opened link ${linkUrl} in window ${windowId}`);
+            // console.log(`Opened link ${linkUrl} in window ${windowId}`);
+        }
+
+        //  Open link in a specific group
+        const groupIdMatcher = info.menuItemId
+            .toString()
+            .match(/^open-link-in-specific-group-(\d+)$/);
+        if (groupIdMatcher) {
+            const groupId = parseInt(groupIdMatcher[1]);
+            this.tabService.openNewTabInGroup(linkUrl, groupId);
+            // console.log(`Opened link ${linkUrl} in group ${groupId}`);
         }
     };
 
-    private readonly updateContextMenuTabEvents: (keyof typeof chrome.tabs)[] =
+    private readonly TabEvents: (keyof typeof chrome.tabs)[] =
         [
             'onActivated',
             'onAttached',
@@ -58,25 +77,43 @@ export class ContextMenuService {
             'onUpdated',
         ];
 
+    private readonly TabGroupEvents: (keyof typeof chrome.tabGroups)[] =
+        ['onCreated', 'onMoved', 'onUpdated', 'onRemoved'];
+
     private registerTabEventListeners() {
-        this.updateContextMenuTabEvents.forEach((event) => {
+        this.TabEvents.forEach((event) => {
             const tabEvent = chrome.tabs[event] as chrome.events.Event<any>;
             tabEvent.addListener(this.updateContextMenu);
         });
     }
 
-    // Update the context menu item with information about all open windows
-    private updateContextMenu = () => {
-        // Remove existing context menu listeners
-        chrome.contextMenus.onClicked.removeListener(
-            this.contextMenuClickHandler
-        );
+    private registerTabGroupEventListeners() {
+        this.TabGroupEvents.forEach((event) => {
+            const tabGroupEvent = chrome.tabGroups[
+                event
+            ] as chrome.events.Event<any>;
+            tabGroupEvent.addListener(this.updateContextMenu);
+        });
+    }
 
+    private getAllTabGroups = async () => {
+        return new Promise<chrome.tabGroups.TabGroup[]>((resolve, reject) => {
+            chrome.tabGroups.query({}, (groups) => {
+                if (chrome.runtime.lastError) {
+                    reject(chrome.runtime.lastError);
+                    return;
+                }
+                resolve(groups);
+            });
+        });
+    };
+
+    // Update "Open Link in Specific Window" context menu items
+    private updateWindowContextMenus = async () => {
         chrome.windows
             .getAll({ populate: true })
             .then((windows: chrome.windows.Window[]) => {
                 const windowIdToDescription = new Map<number, string>();
-
                 windows.forEach((window: chrome.windows.Window) => {
                     // console.log("updateContextMenu tabs: ", window.tabs);
 
@@ -98,13 +135,7 @@ export class ContextMenuService {
                     }
                 });
 
-                // Remove all context menu items and recreate "Open Link in Specific Window"
-                chrome.contextMenus.removeAll();
-                chrome.contextMenus.create({
-                    id: 'open-link-in-specific-window',
-                    title: 'Open Link in Specific Window',
-                    contexts: ['link'],
-                });
+                this.createOpenLinkInWindowContextMenu();
 
                 // Add each window to context menu as a subitem of "Open Link in Specific Window"
                 windowIdToDescription.forEach(
@@ -125,5 +156,43 @@ export class ContextMenuService {
                     }
                 );
             });
+    };
+
+    // Update "Open Link in Specific Group" context menu items
+    private updateGroupContextMenus = async () => {
+        // Get all existing tab groups and create context menu items for each
+        const groups = await this.getAllTabGroups();
+        // Recreate "Open Link in Group" context menu if groups exist
+        if (groups.length > 0) {
+            this.createOpenLinkInGroupContextMenu();
+            // Add each tab group to context menu as a subitem of "Open Link in Group"
+            groups.forEach((group) => {
+                chrome.contextMenus.create({
+                    id: `open-link-in-specific-group-${group.id}`,
+                    title: group.title,
+                    contexts: ['link'],
+                    parentId: 'open-link-in-specific-group',
+                });
+                // Add click listener to open link in group
+                chrome.contextMenus.onClicked.addListener(
+                    this.contextMenuClickHandler
+                );
+            });
+        }
+    };
+
+    // Remove all existing context menus and recreate them using updated data
+    private updateContextMenu = async () => {
+        // Remove all existing context menus and their listeners
+        chrome.contextMenus.onClicked.removeListener(
+            this.contextMenuClickHandler
+        );
+        chrome.contextMenus.removeAll();
+
+        // TODO(later): Find a way to conditionally update context menus based on event
+        //  type. This is weird because both menus are reliant on the same handler
+        // so you can't just call removeListener on one while the other remains.
+        await this.updateWindowContextMenus();
+        await this.updateGroupContextMenus();
     };
 }

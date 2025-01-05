@@ -7,7 +7,7 @@ const clipboardService = new ClipboardService(tabService);
 const contextMenuService = new ContextMenuService(tabService);
 
 chrome.runtime.onInstalled.addListener(() => {
-    console.log('BetterTabTool installed');
+    console.log('BetterTabTool installed!');
     contextMenuService.init();
 });
 
@@ -20,6 +20,6 @@ chrome.commands.onCommand.addListener(async (command) => {
     if (command === 'copy-current-tab-url') {
         clipboardService.copyCurrentTabUrl();
     } else if (command === 'open-new-tab-in-current-group') {
-        tabService.openNewTabInCurrentGroup();
+        tabService.openNewTabInGroup();
     }
 });
