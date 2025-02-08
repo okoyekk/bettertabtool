@@ -2,8 +2,19 @@ import React, { useEffect, useState } from 'react';
 import { userPreferencesToDescriptions } from '../constants';
 import { preferenceCompareFn } from '../utils';
 
+import { Checkbox, List, ListItem, Divider, ListItemText, Typography, CssBaseline } from '@mui/material';
+import { createTheme, ThemeProvider } from '@mui/material/styles';
+
 const App: React.FC = () => {
     const [preferences, setPreferences] = useState<{ [key: string]: boolean }>({});
+    const theme = createTheme({
+        typography: {
+            fontSize: 12,
+        },
+        palette: {
+            mode: preferences['darkMode'] ? 'dark' : 'light',
+        }
+    });
 
     useEffect(() => {
         chrome.runtime.sendMessage({ type: 'PREF_getAllPreferences' }, (response) => {
@@ -28,21 +39,48 @@ const App: React.FC = () => {
     };
 
     return (
-        <div id="top" className={preferences['darkMode'] ? 'dark-mode' : 'light-mode'}>
-            <h1>BetterTabTool</h1>
-            {Object.keys(preferences).sort(preferenceCompareFn).map((key: string) => (
-                <div key={key}>
-                    <label htmlFor={key}>{key}</label>
-                    <input
-                        type="checkbox"
-                        id={key}
-                        checked={preferences[key] || false}
-                        onChange={() => handleToggle(key)}
-                    />
-                    <p>{userPreferencesToDescriptions[key]}</p>
-                </div>
-            ))}
-        </div>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <div id="top">
+                <Typography variant='h4' sx={{ pt: 2, pl: 2, pr: 2 }}>BetterTabTool</Typography>
+                <Typography variant='h5' sx={{ pl: 2, pr: 2 }}>Enhance your tab management</Typography >
+                <Divider />
+                <List sx={{ width: '100%', bgcolor: 'background.paper' }}>
+                    {Object.keys(preferences).sort(preferenceCompareFn).map((key: string) => (
+                        <React.Fragment key={key}>
+                            <ListItem alignItems="flex-start">
+                                <ListItemText
+                                    primary={
+                                        <Typography
+                                            sx={{ color: 'text.primary', display: 'block' }}
+                                            component="p"
+                                            variant="body1"
+                                        >
+                                            {key}
+                                        </Typography>
+                                    }
+                                    secondary={
+                                        <Typography
+                                            sx={{ color: 'text.primary', display: 'inline' }}
+                                            component="span"
+                                            variant="body2"
+                                        >
+                                            {userPreferencesToDescriptions[key]}
+                                        </Typography>
+                                    }
+                                />
+                                <Checkbox
+                                    id={`${key}-toggle`}
+                                    checked={preferences[key] || false}
+                                    onChange={() => handleToggle(key)}
+                                />
+                            </ListItem>
+                            {key != Object.keys(userPreferencesToDescriptions)[Object.keys(userPreferencesToDescriptions).length - 1] && <Divider component="li" />}
+                        </React.Fragment>
+                    ))}
+                </List>
+            </div>
+        </ThemeProvider>
     );
 };
 
