@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { userPreferencesToDescriptions } from '../constants';
+import { preferenceCompareFn } from '../utils';
 
 const App: React.FC = () => {
     const [preferences, setPreferences] = useState<{ [key: string]: boolean }>({});
@@ -29,7 +30,7 @@ const App: React.FC = () => {
     return (
         <div id="top" className={preferences['darkMode'] ? 'dark-mode' : 'light-mode'}>
             <h1>BetterTabTool</h1>
-            {Object.keys(preferences).map((key: string) => (
+            {Object.keys(preferences).sort(preferenceCompareFn).map((key: string) => (
                 <div key={key}>
                     <label htmlFor={key}>{key}</label>
                     <input
