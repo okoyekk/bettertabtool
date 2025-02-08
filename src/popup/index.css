@@ -1,0 +1,26 @@
+#root,
+#top {
+    position: relative;
+    top: 0;
+    left: 0;
+    height: auto;
+    width: 100%;
+}
+
+body {
+    width: 350px;
+    height: auto;
+    max-height: 450px;
+    margin: 0;
+    overflow: auto;
+}
+
+/* div.dark-mode {
+    background-color: #121212;
+    color: white;
+}
+
+div.light-mode {
+    background-color: white;
+    color: black;
+} */

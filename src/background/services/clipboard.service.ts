@@ -1,7 +1,9 @@
 import { TabService } from './tab.service';
+import { PrefService } from './pref.service';
+
 
 export class ClipboardService {
-    constructor(private tabService: TabService) {}
+    constructor(private tabService: TabService, private prefService: PrefService) {}
 
     /**
      * Asynchronously copies the URL of the current tab to the clipboard.
@@ -25,9 +27,9 @@ export class ClipboardService {
                 },
                 args: [tab.url],
             });
-
-            // console.log(`URL ${tab.url} copied to clipboard`);
-            this.showCopyNotification();
+            if (await this.prefService.getBooleanPreference('showCopyNotification')) {
+                this.showCopyNotification();
+            }
         } catch (err) {
             console.error('Error copying URL to clipboard: ', err);
         }
@@ -41,7 +43,7 @@ export class ClipboardService {
             'current-tab-url-created',
             {
                 type: 'basic',
-                iconUrl: '../assets/placeholder.png',
+                iconUrl: '../assets/icon-512.png',
                 title: 'BetterTabTool',
                 message: 'Link copied to clipboard!',
             },
