@@ -27,7 +27,7 @@ const App: React.FC = () => {
     };
 
     return (
-        <div>
+        <div id="top" className={preferences['darkMode'] ? 'dark-mode' : 'light-mode'}>
             <h1>BetterTabTool</h1>
             {Object.keys(preferences).map((key: string) => (
                 <div key={key}>
