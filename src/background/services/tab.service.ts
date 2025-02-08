@@ -1,4 +1,7 @@
+import { PrefService } from './pref.service';
+
 export class TabService {
+    constructor(private prefService: PrefService) {}
     /**
      * Gets the active tab in the current window.
      *
@@ -41,11 +44,12 @@ export class TabService {
             // Use provided group id if passed in, else add to current group
             let currentGroupId = groupId ? groupId : tab.groupId;
 
+            const shouldNewTabBeActive = await this.prefService.getBooleanPreference("makeNewTabsActive");
             // Create a new tab
             // console.log(`Creating new tab in group (${currentGroupId})`);
             const newTab = (await chrome.tabs.create({
                 openerTabId: tab.id,
-                active: true,
+                active: shouldNewTabBeActive,
                 url: url ? url : 'chrome://new-tab-page',
             })) as chrome.tabs.Tab;
 

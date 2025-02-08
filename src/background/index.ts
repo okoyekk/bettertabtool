@@ -3,10 +3,10 @@ import { ContextMenuService } from './services/contextmenu.service';
 import { PrefService } from './services/pref.service';
 import { TabService } from './services/tab.service';
 
-const tabService = new TabService();
 const prefService = new PrefService();
+const tabService = new TabService(prefService);
 const clipboardService = new ClipboardService(tabService, prefService);
-const contextMenuService = new ContextMenuService(tabService);
+const contextMenuService = new ContextMenuService(tabService, prefService);
 
 chrome.runtime.onInstalled.addListener(() => {
     console.log('BetterTabTool installed!');

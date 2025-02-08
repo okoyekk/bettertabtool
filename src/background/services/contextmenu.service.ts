@@ -1,7 +1,8 @@
 import { TabService } from './tab.service';
+import { PrefService } from './pref.service';
 
 export class ContextMenuService {
-    constructor(private readonly tabService: TabService) {}
+    constructor(private readonly tabService: TabService, private prefService: PrefService) {}
 
     private isContextMenuUpdating = false;
 
@@ -41,7 +42,7 @@ export class ContextMenuService {
         });
     }
 
-    private contextMenuClickHandler = (
+    private contextMenuClickHandler = async (
         info: chrome.contextMenus.OnClickData,
         _tab?: chrome.tabs.Tab
     ) => {
@@ -50,6 +51,8 @@ export class ContextMenuService {
             console.error('No link URL found');
             return;
         }
+
+        const shouldNewTabBeActive = await this.prefService.getBooleanPreference("makeNewTabsActive");
 
         //  Open link in a specific window
         const windowIdMatcher = info.menuItemId
@@ -60,7 +63,7 @@ export class ContextMenuService {
             chrome.tabs.create({
                 url: linkUrl,
                 windowId: windowId,
-                active: true,
+                active: shouldNewTabBeActive,
             });
             // console.log(`Opened link ${linkUrl} in window ${windowId}`);
         }

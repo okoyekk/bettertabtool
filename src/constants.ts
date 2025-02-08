@@ -1,6 +1,6 @@
 const userPreferencesToDescriptions: Record<string, string> = {
     "showCopyNotification": "Show notification on Copy Current Tab URL",
-    "pref2": "Description for pref2",
+    "makeNewTabsActive": "Make newly created tabs active",
     "pref3": "Description for pref3",
 }
 
