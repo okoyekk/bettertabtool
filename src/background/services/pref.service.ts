@@ -37,9 +37,8 @@ export class PrefService {
             return null;
         }
 
-        chrome.storage.local.set({ [key]: value }).then(() => {
-            console.log(`Preference ${key} set to ${value}`);
-        });
+        await chrome.storage.local.set({ [key]: value });
+        console.log(`Preference ${key} set to ${value}`);
         return true;
     }
 

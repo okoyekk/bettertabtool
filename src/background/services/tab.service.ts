@@ -24,8 +24,8 @@ export class TabService {
      * @param {chrome.windows.Window} window - The Chrome window object to search within.
      * @returns {chrome.tabs.Tab | undefined} The active tab in the specified window, or undefined if no active tab is found
      */
-    getActiveTabInWindow(window: chrome.windows.Window): chrome.tabs.Tab | undefined {
-        return window.tabs?.filter((tab) => tab.active)[0];
+    getActiveTabInWindow(window: chrome.windows.Window) {
+        return window.tabs?.find(tab => tab.active);
     }
 
     /**
