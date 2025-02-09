@@ -75,4 +75,15 @@ export class TabService {
             console.error('Error opening new tab in current group: ', err);
         }
     }
+
+    /**
+     * Duplicates the currently active tab in the current window
+     * @returns {Promise<void>}
+     */
+    async duplicateCurrentTab(): Promise<void> {
+        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (tab) {
+            await chrome.tabs.duplicate(tab.id!);
+        }
+    }
 }
