@@ -27,6 +27,8 @@ chrome.commands.onCommand.addListener(async (command) => {
         await tabService.openNewTabInGroup();
     } else if (command === 'duplicate-tab') {
         await tabService.duplicateCurrentTab();
+    } else if (command === 'merge-all-windows') {
+        await tabService.mergeAllWindows();
     }
 });
 

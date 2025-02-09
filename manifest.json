@@ -44,6 +44,12 @@
                 "default": "Ctrl+Shift+Period"
             },
             "description": "Duplicate current tab"
+        },
+        "merge-all-windows": {
+            "suggested_key": {
+                "default": "Ctrl+Shift+Comma"
+            },
+            "description": "Merge all windows"
         }
     }
 }

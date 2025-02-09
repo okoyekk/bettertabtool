@@ -86,4 +86,31 @@ export class TabService {
             await chrome.tabs.duplicate(tab.id!);
         }
     }
+
+    /**
+     * Merges all windows into the current window.
+     * 
+     * @async
+     * @returns {Promise<void>}
+     */
+    async mergeAllWindows(): Promise<void> {
+        // Get all windows
+        const windows = await chrome.windows.getAll({ populate: true });
+
+        if (windows.length <= 1) {
+            return; // Nothing to merge
+        }
+
+        // Merge all windows into the current window
+        const targetWindow = await chrome.windows.getCurrent();
+
+        for (const win of windows) {
+            if (win.id === targetWindow.id) continue; // Skip the target window
+            
+            // Move each tab from the current window to the target window
+            for (const tab of win.tabs || []) {
+                await chrome.tabs.move(tab.id!, { windowId: targetWindow.id, index: -1 });
+            }
+        }
+    }
 }
