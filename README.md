@@ -8,6 +8,7 @@
 -   Run `npm run build` from the repo
     -   This generates extension files in `./dist/`
 -   Open Chrome and navigate to `chrome://extensions`
+-   Turn on developer mode toggle (top right corner)
 -   Click "Load unpacked" and select the dist folder that was just generated
 
 ## Development Instructions
@@ -17,3 +18,16 @@
 -   Run `npm run build` from the repo
 -   Open Chrome and navigate to `chrome://extensions`
 -   Either add the extension through "Load unpacked" or click the reload button on the existing extension
+
+## Screenshots
+
+Light mode popup
+<a href="url"><img src="./media/popup-light.png" align="center"></a>
+Dark mode popup
+<a href="url"><img src="./media/popup-dark.png" align="center"></a>
+Open link in Specific Window
+<a href="url"><img src="./media/open-link-in-window.png" align="center"></a>
+
+### Default Keybinds
+
+<a href="url"><img src="./media/default-keybinds.png" align="center"></a>
