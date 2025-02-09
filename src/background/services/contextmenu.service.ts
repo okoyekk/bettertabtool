@@ -172,14 +172,16 @@ export class ContextMenuService {
             await this.createOpenLinkInGroupContextMenu();
             // Sequentially add each tab group to context menu as a subitem of "Open Link in Group"
             groups.forEach(async (group) => {
-                await new Promise<void>((resolve) => {
-                    chrome.contextMenus.create({
-                        id: `open-link-in-specific-group-${group.id}`,
-                        title: group.title,
-                        contexts: ['link'],
-                        parentId: 'open-link-in-specific-group',
-                    }, () => resolve());
-                });
+                if (group.title!.length > 0) {
+                    await new Promise<void>((resolve) => {
+                        chrome.contextMenus.create({
+                            id: `open-link-in-specific-group-${group.id}`,
+                            title: group.title,
+                            contexts: ['link'],
+                            parentId: 'open-link-in-specific-group',
+                        }, () => resolve());
+                    });
+                }
             });
         }
     };
