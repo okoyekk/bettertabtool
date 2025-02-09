@@ -26,6 +26,7 @@ export class TabService {
     getActiveTabInWindow(window: chrome.windows.Window) {
         return window.tabs?.filter((tab) => tab.active)[0];
     }
+
     /**
      * A function that creates a new tab in a specified group.
      *
@@ -90,29 +91,51 @@ export class TabService {
     }
 
     /**
-     * Merges all windows into the current window.
+     * Merges all windows into the current window while maintaining tab groupings.
      * 
      * @async
      * @returns {Promise<void>}
      */
     async mergeAllWindows(): Promise<void> {
+        // console.log('Starting to merge all windows into the current window.');
+
         // Get all windows
         const windows = await chrome.windows.getAll({ populate: true });
+        // console.log(`Found ${windows.length} windows.`);
+        // console.log(windows);
 
         if (windows.length <= 1) {
+            // console.log('Nothing to merge, only one window is open.');
             return; // Nothing to merge
         }
 
         // Merge all windows into the current window
         const targetWindow = await chrome.windows.getCurrent();
+        // console.log(`Target window ID: ${targetWindow.id}`);
 
         for (const win of windows) {
             if (win.id === targetWindow.id) continue; // Skip the target window
-            
-            // Move each tab from the current window to the target window
+
+            // console.log(`Processing window with ID: ${win.id}`);
+
+            let tabGroups: chrome.tabGroups.TabGroup[] = await chrome.tabGroups.query({ windowId: win.id });
+            // console.log(`Found ${tabGroups.length} tab groups in window ID: ${win.id}`);
+
+            // Move each ungrouped tab from the current window to the target window
             for (const tab of win.tabs || []) {
-                await chrome.tabs.move(tab.id!, { windowId: targetWindow.id, index: -1 });
+                if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) {
+                    // console.log(`Moving tab ID: ${tab.id} from window ID: ${win.id} to target window ID: ${targetWindow.id}`);
+                    await chrome.tabs.move(tab.id!, { windowId: targetWindow.id, index: -1 });
+                }
+            }
+
+            // Move each tab group from the current window to the target window
+            for (const group of tabGroups) {
+                // console.log(`Moving tabGroup ID: ${group.id} from window ID: ${win.id} to target window ID: ${targetWindow.id}`);
+                await chrome.tabGroups.move(group.id!, { windowId: targetWindow.id, index: -1 });
             }
         }
+
+        // console.log('Finished merging all windows.');
     }
 }
