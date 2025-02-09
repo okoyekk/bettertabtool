@@ -78,6 +78,8 @@ export class TabService {
 
     /**
      * Duplicates the currently active tab in the current window
+     * 
+     * @async
      * @returns {Promise<void>}
      */
     async duplicateCurrentTab(): Promise<void> {
