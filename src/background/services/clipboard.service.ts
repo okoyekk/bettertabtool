@@ -38,7 +38,7 @@ export class ClipboardService {
     /**
      * Shows a native notification when a link is copied to the clipboard.
      */
-    private showCopyNotification() {
+    private showCopyNotification(): void {
         chrome.notifications.create(
             'current-tab-url-created',
             {

@@ -24,7 +24,7 @@ export class TabService {
      * @param {chrome.windows.Window} window - The Chrome window object to search within.
      * @returns {chrome.tabs.Tab | undefined} The active tab in the specified window, or undefined if no active tab is found
      */
-    getActiveTabInWindow(window: chrome.windows.Window) {
+    getActiveTabInWindow(window: chrome.windows.Window): chrome.tabs.Tab | undefined {
         return window.tabs?.filter((tab) => tab.active)[0];
     }
 
@@ -36,7 +36,7 @@ export class TabService {
      * @param {number} groupId - The ID of the group to open the new tab in
      * @returns {Promise<void>}
      */
-    async openNewTabInGroup(url?: string, groupId?: number) {
+    async openNewTabInGroup(url?: string, groupId?: number): Promise<void> {
         try {
             const tab = await this.getActiveTabInCurrentWindow();
             if (!tab?.url || !tab.id) {
@@ -46,14 +46,14 @@ export class TabService {
             // Use provided group id if passed in, else add to current group
             let currentGroupId = groupId ? groupId : tab.groupId;
 
-            const shouldNewTabBeActive = await this.prefService.getBooleanPreference("makeNewTabsActive");
+            const shouldNewTabBeActive = (await this.prefService.getBooleanPreference("makeNewTabsActive")) ?? false;
             // Create a new tab
             // console.log(`Creating new tab in group (${currentGroupId})`);
-            const newTab = (await chrome.tabs.create({
+            const newTab = await chrome.tabs.create({
                 openerTabId: tab.id,
                 active: shouldNewTabBeActive,
                 url: url ? url : 'chrome://new-tab-page',
-            })) as chrome.tabs.Tab;
+            });
 
             if (!newTab.id) {
                 console.error('No id found for new tab');
@@ -98,7 +98,7 @@ export class TabService {
      * @returns {Promise<void>}
      */
     async mergeAllWindows(): Promise<void> {
-        const confirmMergeWindows: boolean = await this.prefService.getBooleanPreference("confirmMergeWindows");
+        const confirmMergeWindows = (await this.prefService.getBooleanPreference("confirmMergeWindows")) ?? false;
         if (confirmMergeWindows) {
             // console.log('last merge trigger time: ', this.lastMergeTriggerTime);
             // console.log('current time: ', Date.now());
