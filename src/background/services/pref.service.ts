@@ -31,15 +31,14 @@ export class PrefService {
      * @returns {Promise<true | null>} Returns true if the preference is set successfully,
      * or null if the preference key is invalid.
      */
-    async setBooleanPreference(key: string, value: boolean) {
+    async setBooleanPreference(key: string, value: boolean): Promise<boolean | null> {
         if (!(Object.keys(userPreferencesToDescriptions).includes(key))) {
             console.error(`Preference ${key} is not valid`);
             return null;
         }
 
-        chrome.storage.local.set({ [key]: value }).then(() => {
-            console.log(`Preference ${key} set to ${value}`);
-        });
+        await chrome.storage.local.set({ [key]: value });
+        console.log(`Preference ${key} set to ${value}`);
         return true;
     }
 
@@ -50,7 +49,7 @@ export class PrefService {
      * @returns {Promise<boolean | null>} A promise that resolves to the boolean value
      * of the preference if valid, or null if the preference key is invalid.
      */
-    async getBooleanPreference(key: string) {
+    async getBooleanPreference(key: string): Promise<boolean | null> {
         if (!(Object.keys(userPreferencesToDescriptions).includes(key))) {
             console.error(`Preference ${key} is not valid`);
             return null;
@@ -67,7 +66,7 @@ export class PrefService {
      * @returns {Promise<{[key: string]: boolean}>} A promise that resolves to an object
      * containing all boolean user preferences.
      */
-    async getAllPreferences() {
+    async getAllPreferences(): Promise<{ [key: string]: boolean }> {
         return await chrome.storage.local.get(Object.keys(userPreferencesToDescriptions));
     }
 
@@ -78,7 +77,7 @@ export class PrefService {
      * @returns {Promise<void>} A promise that resolves when all boolean user preferences
      * have been removed from local storage.
      */
-    async removeAllPreferences() {
+    async removeAllPreferences(): Promise<void> {
         let prefs = [...Object.keys(userPreferencesToDescriptions)];
         return await chrome.storage.local.remove(prefs);
     }

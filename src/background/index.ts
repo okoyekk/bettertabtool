@@ -25,6 +25,10 @@ chrome.commands.onCommand.addListener(async (command) => {
         await clipboardService.copyCurrentTabUrl();
     } else if (command === 'open-new-tab-in-current-group') {
         await tabService.openNewTabInGroup();
+    } else if (command === 'duplicate-tab') {
+        await tabService.duplicateCurrentTab();
+    } else if (command === 'merge-all-windows') {
+        await tabService.mergeAllWindows();
     }
 });
 
