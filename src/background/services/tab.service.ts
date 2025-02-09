@@ -2,6 +2,7 @@ import { PrefService } from './pref.service';
 
 export class TabService {
     constructor(private prefService: PrefService) {}
+    private lastMergeTriggerTime: number = 0;
     /**
      * Gets the active tab in the current window.
      *
@@ -97,6 +98,19 @@ export class TabService {
      * @returns {Promise<void>}
      */
     async mergeAllWindows(): Promise<void> {
+        const confirmMergeWindows: boolean = await this.prefService.getBooleanPreference("confirmMergeWindows");
+        if (confirmMergeWindows) {
+            // console.log('last merge trigger time: ', this.lastMergeTriggerTime);
+            // console.log('current time: ', Date.now());
+            // console.log('time diff: ', Date.now() - this.lastMergeTriggerTime);
+            // Do not merge if last trigger was over 1 second ago
+            if (Date.now() - this.lastMergeTriggerTime > 1000) {
+                this.lastMergeTriggerTime = Date.now();
+                return;
+            }
+        }
+        // Update the last merge trigger time
+        this.lastMergeTriggerTime = Date.now();
         // console.log('Starting to merge all windows into the current window.');
 
         // Get all windows
