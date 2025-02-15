@@ -2,7 +2,8 @@
     "manifest_version": 3,
     "name": "BetterTabTool",
     "description": "A tool to help you manage your tabs and windows efficiently.",
-    "version": "0.1.0",
+    "version": "0.1.1",
+    "minimum_chrome_version": "120",
     "permissions": [
         "tabs",
         "tabGroups",
@@ -11,7 +12,8 @@
         "clipboardWrite",
         "scripting",
         "notifications",
-        "contextMenus"
+        "contextMenus",
+        "alarms"
     ],
     "icons": {
         "16": "assets/icon-16.png",

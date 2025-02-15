@@ -5,6 +5,9 @@ export class ContextMenuService {
     constructor(private readonly tabService: TabService, private prefService: PrefService) {}
 
     private isContextMenuUpdating = false;
+    private isContextMenuClickHandlerRegistered = false;
+    private registeredTabEventListeners = new Set<keyof typeof chrome.tabs>();
+    private registeredTabGroupEventListeners = new Set<keyof typeof chrome.tabGroups>();
 
     /**
      * Initializes the context menu service by removing all existing context menus,
@@ -12,14 +15,20 @@ export class ContextMenuService {
      *
      */
     init() {
-        chrome.contextMenus.removeAll();
-        this.createOpenLinkInWindowContextMenu();
+        console.log("Initializing ContextMenuService...");
+        // Remove all existing listeners
+        this.unregisterTabEventListeners();
+        this.unregisterTabGroupEventListeners();
+        this.unregisterContextMenuClickHandler();
+        // Remove all existing context menus and recreate them
+        chrome.contextMenus.removeAll(() => {
+            this.createOpenLinkInWindowContextMenu();
+            this.updateContextMenu();
+        })
+        // (re-)Register event listeners
         this.registerTabEventListeners();
         this.registerTabGroupEventListeners();
-
-        chrome.contextMenus.onClicked.addListener(
-            this.contextMenuClickHandler
-        );
+        this.registerContextMenuClickHandler();
     }
 
     private createOpenLinkInWindowContextMenu(): Promise<void> {
@@ -101,25 +110,81 @@ export class ContextMenuService {
         ['onCreated', 'onMoved', 'onUpdated', 'onRemoved'];
 
     /**
-     * Registers event listeners for tab events.
+     * Registers event listeners for tab events. Maintains a set of registered
+     * listeners to prevent duplicate registrations.
      */
     private registerTabEventListeners(): void {
         this.TabEvents.forEach((event) => {
-            const tabEvent = chrome.tabs[event] as chrome.events.Event<any>;
-            tabEvent.addListener(this.updateContextMenu);
+            if (!this.registeredTabEventListeners.has(event)) {
+                const tabEvent = chrome.tabs[event] as chrome.events.Event<any>;
+                tabEvent.addListener(this.updateContextMenu);
+                this.registeredTabEventListeners.add(event);
+            }
         });
     }
 
     /**
-     * Registers event listeners for tab group events.
+     * Registers event listeners for tab group events. Maintains a set of registered
+     * listeners to prevent duplicate registrations.
      */
     private registerTabGroupEventListeners(): void {
         this.TabGroupEvents.forEach((event) => {
-            const tabGroupEvent = chrome.tabGroups[
-                event
-            ] as chrome.events.Event<any>;
-            tabGroupEvent.addListener(this.updateContextMenu);
+            if (!this.registeredTabGroupEventListeners.has(event)) {
+                const tabGroupEvent = chrome.tabGroups[
+                    event
+                ] as chrome.events.Event<any>;
+                tabGroupEvent.addListener(this.updateContextMenu);
+                this.registeredTabGroupEventListeners.add(event);
+            }
         });
+    }
+
+    /**
+     * Registers a click event handler for the context menu.
+     */
+    private registerContextMenuClickHandler(): void {
+        if (!this.isContextMenuClickHandlerRegistered) {
+            chrome.contextMenus.onClicked.addListener(
+                this.contextMenuClickHandler
+            );
+            this.isContextMenuClickHandlerRegistered = true;
+        }
+    }
+
+    /**
+     * Unregisters event listeners for tab events.
+     */
+    private unregisterTabEventListeners(): void {
+        this.registeredTabEventListeners.forEach((event) => {
+            const tabEvent = chrome.tabs[event] as chrome.events.Event<any>;
+            tabEvent.removeListener(this.updateContextMenu);
+            this.registeredTabEventListeners.delete(event);
+        });
+        this.registeredTabEventListeners.clear(); // Reset tracking set
+    }
+
+    /**
+     * Unregisters event listeners for tab group events.
+     */
+    private unregisterTabGroupEventListeners(): void {
+        this.registeredTabGroupEventListeners.forEach((event) => {
+            const tabGroupEvent = chrome.tabGroups[event] as chrome.events.Event<any>;
+            tabGroupEvent.removeListener(this.updateContextMenu);
+            this.registeredTabGroupEventListeners.delete(event);
+        });
+        this.registeredTabGroupEventListeners.clear(); // Reset tracking set
+    }
+
+    /**
+     * Unregisters the click event listener for the context menu.
+     */
+    private unregisterContextMenuClickHandler(): void {
+        if (this.isContextMenuClickHandlerRegistered) {
+            chrome.contextMenus.onClicked.removeListener(
+                this.contextMenuClickHandler
+            );
+            this.isContextMenuClickHandlerRegistered = false;
+        }
     }
 
     /**
