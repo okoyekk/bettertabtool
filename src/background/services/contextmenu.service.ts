@@ -14,17 +14,18 @@ export class ContextMenuService {
      * creating new context menu items and registering tab and tab group event listeners.
      *
      */
-    init() {
+    async init(): Promise<void> {
         console.log("Initializing ContextMenuService...");
         // Remove all existing listeners
         this.unregisterTabEventListeners();
         this.unregisterTabGroupEventListeners();
         this.unregisterContextMenuClickHandler();
         // Remove all existing context menus and recreate them
-        chrome.contextMenus.removeAll(() => {
-            this.createOpenLinkInWindowContextMenu();
-            this.updateContextMenu();
-        })
+        await new Promise<void>((resolve) => {
+            chrome.contextMenus.removeAll(() => resolve());
+        });
+        await this.createOpenLinkInWindowContextMenu();
+        await this.updateContextMenu();
         // (re-)Register event listeners
         this.registerTabEventListeners();
         this.registerTabGroupEventListeners();

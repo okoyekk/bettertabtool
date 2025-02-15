@@ -9,34 +9,34 @@ const clipboardService = new ClipboardService(tabService, prefService);
 const contextMenuService = new ContextMenuService(tabService, prefService);
 
 // Initialize services function
-const initializeServices = () => {
+const initializeServices = async () => {
     console.log('Initializing BetterTabTool services...');
-    contextMenuService.init();
-    prefService.init();
+    await contextMenuService.init();
+    await prefService.init();
 
     // Set up alarm to wake up service worker every 30 seconds
     chrome.alarms.create('keepAlive', { periodInMinutes: 0.5 });
 };
 
 // Listen for alarm
-chrome.alarms.onAlarm.addListener((alarm) => {
+chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === 'keepAlive') {
         console.log(`BetterTabTool service worker is alive @ ${new Date().toISOString()}`);
         // Re-initialize context menu service to ensure listeners are registered after service worker restarts
-        contextMenuService.init();
+        await contextMenuService.init();
     }
 });
 
 // Handle installation
-chrome.runtime.onInstalled.addListener(() => {
+chrome.runtime.onInstalled.addListener(async () => {
     console.log('BetterTabTool installed!');
-    initializeServices();
+    await initializeServices();
 });
 
 // Handle startup
-chrome.runtime.onStartup.addListener(() => {
+chrome.runtime.onStartup.addListener(async () => {
     console.log('BetterTabTool started!');
-    initializeServices();
+    await initializeServices();
 });
 
 chrome.commands.onCommand.addListener(async (command) => {
