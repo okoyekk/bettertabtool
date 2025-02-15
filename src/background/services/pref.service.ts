@@ -1,4 +1,4 @@
-import { userPreferencesToDescriptions } from "../../constants";
+import { userPreferencesToDescriptions } from '../../constants';
 // A class that persists boolean user preferences between sessions
 
 export class PrefService {
@@ -12,9 +12,9 @@ export class PrefService {
     async init() {
         // Intializes preferences with default values (false) if not set
         const prefs = await this.getAllPreferences();
-        console.log("===================");
+        console.log('===================');
         console.log(`Current preferences: ${JSON.stringify(prefs)}`);
-        console.log("===================");
+        console.log('===================');
 
         for (const pref in userPreferencesToDescriptions) {
             if (prefs[pref] === undefined) {
@@ -32,7 +32,7 @@ export class PrefService {
      * or null if the preference key is invalid.
      */
     async setBooleanPreference(key: string, value: boolean): Promise<boolean | null> {
-        if (!(Object.keys(userPreferencesToDescriptions).includes(key))) {
+        if (!Object.keys(userPreferencesToDescriptions).includes(key)) {
             console.error(`Preference ${key} is not valid`);
             return null;
         }
@@ -50,7 +50,7 @@ export class PrefService {
      * of the preference if valid, or null if the preference key is invalid.
      */
     async getBooleanPreference(key: string): Promise<boolean | null> {
-        if (!(Object.keys(userPreferencesToDescriptions).includes(key))) {
+        if (!Object.keys(userPreferencesToDescriptions).includes(key)) {
             console.error(`Preference ${key} is not valid`);
             return null;
         }
@@ -59,7 +59,6 @@ export class PrefService {
         console.log(`Preference ${key} is ${result[key]}`);
         return result[key];
     }
-
 
     /**
      * Retrieves all boolean user preferences from local storage.

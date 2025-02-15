@@ -2,7 +2,10 @@ import { TabService } from './tab.service';
 import { PrefService } from './pref.service';
 
 export class ContextMenuService {
-    constructor(private readonly tabService: TabService, private prefService: PrefService) {}
+    constructor(
+        private readonly tabService: TabService,
+        private prefService: PrefService,
+    ) {}
 
     private isContextMenuUpdating = false;
     private isContextMenuClickHandlerRegistered = false;
@@ -15,7 +18,7 @@ export class ContextMenuService {
      *
      */
     async init(): Promise<void> {
-        console.log("Initializing ContextMenuService...");
+        console.log('Initializing ContextMenuService...');
         // Remove all existing listeners
         this.unregisterTabEventListeners();
         this.unregisterTabGroupEventListeners();
@@ -34,34 +37,40 @@ export class ContextMenuService {
 
     private createOpenLinkInWindowContextMenu(): Promise<void> {
         return new Promise<void>((resolve) => {
-            chrome.contextMenus.create({
-                id: 'open-link-in-specific-window',
-                title: 'Open Link in Specific Window',
-                contexts: ['link'],
-            }, () => resolve());
+            chrome.contextMenus.create(
+                {
+                    id: 'open-link-in-specific-window',
+                    title: 'Open Link in Specific Window',
+                    contexts: ['link'],
+                },
+                () => resolve(),
+            );
         });
     }
 
     private createOpenLinkInGroupContextMenu(): Promise<void> {
         return new Promise<void>((resolve) => {
-            chrome.contextMenus.create({
-                id: 'open-link-in-specific-group',
-                title: 'Open Link in Specific Group',
-                contexts: ['link'],
-            }, () => resolve());
+            chrome.contextMenus.create(
+                {
+                    id: 'open-link-in-specific-group',
+                    title: 'Open Link in Specific Group',
+                    contexts: ['link'],
+                },
+                () => resolve(),
+            );
         });
     }
 
     /**
      * Handles a click event on a context menu item.
-     * 
+     *
      * @param {chrome.contextMenus.OnClickData} info - The information about the clicked context menu item.
      * @param {chrome.tabs.Tab} _tab - The tab that was clicked.
      * @returns {Promise<void>} A promise that resolves when the context menu item is clicked.
      */
     private contextMenuClickHandler = async (
         info: chrome.contextMenus.OnClickData,
-        _tab?: chrome.tabs.Tab
+        _tab?: chrome.tabs.Tab,
     ): Promise<void> => {
         const linkUrl = info.linkUrl;
         if (!linkUrl) {
@@ -69,12 +78,10 @@ export class ContextMenuService {
             return;
         }
 
-        const shouldNewTabBeActive = await this.prefService.getBooleanPreference("makeNewTabsActive");
+        const shouldNewTabBeActive = await this.prefService.getBooleanPreference('makeNewTabsActive');
 
         //  Open link in a specific window
-        const windowIdMatcher = info.menuItemId
-            .toString()
-            .match(/^open-link-in-specific-window-(\d+)$/);
+        const windowIdMatcher = info.menuItemId.toString().match(/^open-link-in-specific-window-(\d+)$/);
         if (windowIdMatcher) {
             const windowId = parseInt(windowIdMatcher[1]);
             chrome.tabs.create({
@@ -86,9 +93,7 @@ export class ContextMenuService {
         }
 
         //  Open link in a specific group
-        const groupIdMatcher = info.menuItemId
-            .toString()
-            .match(/^open-link-in-specific-group-(\d+)$/);
+        const groupIdMatcher = info.menuItemId.toString().match(/^open-link-in-specific-group-(\d+)$/);
         if (groupIdMatcher) {
             const groupId = parseInt(groupIdMatcher[1]);
             this.tabService.openNewTabInGroup(linkUrl, groupId);
@@ -96,19 +101,22 @@ export class ContextMenuService {
         }
     };
 
-    private readonly TabEvents: (keyof typeof chrome.tabs)[] =
-        [
-            'onActivated',
-            'onAttached',
-            'onCreated',
-            'onDetached',
-            'onMoved',
-            'onRemoved',
-            'onUpdated',
-        ];
+    private readonly TabEvents: (keyof typeof chrome.tabs)[] = [
+        'onActivated',
+        'onAttached',
+        'onCreated',
+        'onDetached',
+        'onMoved',
+        'onRemoved',
+        'onUpdated',
+    ];
 
-    private readonly TabGroupEvents: (keyof typeof chrome.tabGroups)[] =
-        ['onCreated', 'onMoved', 'onUpdated', 'onRemoved'];
+    private readonly TabGroupEvents: (keyof typeof chrome.tabGroups)[] = [
+        'onCreated',
+        'onMoved',
+        'onUpdated',
+        'onRemoved',
+    ];
 
     /**
      * Registers event listeners for tab events. Maintains a set of registered
@@ -131,9 +139,7 @@ export class ContextMenuService {
     private registerTabGroupEventListeners(): void {
         this.TabGroupEvents.forEach((event) => {
             if (!this.registeredTabGroupEventListeners.has(event)) {
-                const tabGroupEvent = chrome.tabGroups[
-                    event
-                ] as chrome.events.Event<any>;
+                const tabGroupEvent = chrome.tabGroups[event] as chrome.events.Event<any>;
                 tabGroupEvent.addListener(this.updateContextMenu);
                 this.registeredTabGroupEventListeners.add(event);
             }
@@ -145,9 +151,7 @@ export class ContextMenuService {
      */
     private registerContextMenuClickHandler(): void {
         if (!this.isContextMenuClickHandlerRegistered) {
-            chrome.contextMenus.onClicked.addListener(
-                this.contextMenuClickHandler
-            );
+            chrome.contextMenus.onClicked.addListener(this.contextMenuClickHandler);
             this.isContextMenuClickHandlerRegistered = true;
         }
     }
@@ -181,16 +185,14 @@ export class ContextMenuService {
      */
     private unregisterContextMenuClickHandler(): void {
         if (this.isContextMenuClickHandlerRegistered) {
-            chrome.contextMenus.onClicked.removeListener(
-                this.contextMenuClickHandler
-            );
+            chrome.contextMenus.onClicked.removeListener(this.contextMenuClickHandler);
             this.isContextMenuClickHandlerRegistered = false;
         }
     }
 
     /**
      * Retrieves all tab groups.
-     * 
+     *
      * @returns {Promise<chrome.tabGroups.TabGroup[]>} A promise that resolves to an array of tab groups.
      */
     private getAllTabGroups = async (): Promise<chrome.tabGroups.TabGroup[]> => {
@@ -207,11 +209,11 @@ export class ContextMenuService {
 
     /**
      * Updates the "Open Link in Specific Window" context menu items.
-     * 
+     *
      * @returns {Promise<void>} A promise that resolves when the context menu items are updated.
      */
     private updateWindowContextMenus = async (): Promise<void> => {
-        const windows = await chrome.windows.getAll({ populate: true })
+        const windows = await chrome.windows.getAll({ populate: true });
         const windowIdToDescription = new Map<number, string>();
 
         windows.forEach((window: chrome.windows.Window) => {
@@ -226,7 +228,7 @@ export class ContextMenuService {
                 // Add number of other tabs in window
                 if (window.tabs.length > 1) {
                     description = description.concat(
-                        ` and ${window.tabs.length - 1} other tab${window.tabs.length > 2 ? 's' : ''}`
+                        ` and ${window.tabs.length - 1} other tab${window.tabs.length > 2 ? 's' : ''}`,
                     );
                 }
                 windowIdToDescription.set(window.id!, description);
@@ -236,23 +238,24 @@ export class ContextMenuService {
         await this.createOpenLinkInWindowContextMenu();
 
         // Sequentially add each window to context menu as a subitem of "Open Link in Specific Window"
-        windowIdToDescription.forEach(
-            async (description: string, windowId: number) => {
-                await new Promise<void>((resolve) => {
-                    chrome.contextMenus.create({
+        windowIdToDescription.forEach(async (description: string, windowId: number) => {
+            await new Promise<void>((resolve) => {
+                chrome.contextMenus.create(
+                    {
                         id: `open-link-in-specific-window-${windowId}`,
                         title: description,
                         contexts: ['link'],
                         parentId: 'open-link-in-specific-window',
-                    }, () => resolve());
-                });
-            }
-        );
+                    },
+                    () => resolve(),
+                );
+            });
+        });
     };
 
     /**
      * Updates the "Open Link in Specific Group" context menu items.
-     * 
+     *
      * @returns {Promise<void>} A promise that resolves when the context menu items are updated.
      */
     private updateGroupContextMenus = async (): Promise<void> => {
@@ -265,12 +268,15 @@ export class ContextMenuService {
             groups.forEach(async (group) => {
                 if (group.title!.length > 0) {
                     await new Promise<void>((resolve) => {
-                        chrome.contextMenus.create({
-                            id: `open-link-in-specific-group-${group.id}`,
-                            title: group.title,
-                            contexts: ['link'],
-                            parentId: 'open-link-in-specific-group',
-                        }, () => resolve());
+                        chrome.contextMenus.create(
+                            {
+                                id: `open-link-in-specific-group-${group.id}`,
+                                title: group.title,
+                                contexts: ['link'],
+                                parentId: 'open-link-in-specific-group',
+                            },
+                            () => resolve(),
+                        );
                     });
                 }
             });
@@ -279,7 +285,7 @@ export class ContextMenuService {
 
     /**
      * Removes all existing context menus and recreates them using updated data.
-     * 
+     *
      * @returns {Promise<void>} A promise that resolves when the context menu items are updated.
      */
     private updateContextMenu = async (): Promise<void> => {
