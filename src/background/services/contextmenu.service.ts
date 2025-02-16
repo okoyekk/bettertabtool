@@ -1,5 +1,6 @@
 import { TabService } from './tab.service';
 import { PrefService } from './pref.service';
+import { isBackgroundPage } from '../../utils';
 
 export class ContextMenuService {
     constructor(
@@ -18,6 +19,11 @@ export class ContextMenuService {
      *
      */
     async init(): Promise<void> {
+        if (!isBackgroundPage()) {
+            // Exit early if not in background context
+            return;
+        }
+
         console.log('Initializing ContextMenuService...');
         // Remove all existing listeners
         this.unregisterTabEventListeners();
