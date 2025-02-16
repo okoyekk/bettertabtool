@@ -25,7 +25,7 @@ export class TabService {
      * @returns {chrome.tabs.Tab | undefined} The active tab in the specified window, or undefined if no active tab is found
      */
     getActiveTabInWindow(window: chrome.windows.Window) {
-        return window.tabs?.find(tab => tab.active);
+        return window.tabs?.find((tab) => tab.active);
     }
 
     /**
@@ -46,7 +46,7 @@ export class TabService {
             // Use provided group id if passed in, else add to current group
             let currentGroupId = groupId ? groupId : tab.groupId;
 
-            const shouldNewTabBeActive = (await this.prefService.getBooleanPreference("makeNewTabsActive")) ?? false;
+            const shouldNewTabBeActive = (await this.prefService.getBooleanPreference('makeNewTabsActive')) ?? false;
             // Create a new tab
             // console.log(`Creating new tab in group (${currentGroupId})`);
             const newTab = await chrome.tabs.create({
@@ -80,12 +80,15 @@ export class TabService {
 
     /**
      * Duplicates the currently active tab in the current window
-     * 
+     *
      * @async
      * @returns {Promise<void>}
      */
     async duplicateCurrentTab(): Promise<void> {
-        const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+        const [tab] = await chrome.tabs.query({
+            active: true,
+            currentWindow: true,
+        });
         if (tab) {
             await chrome.tabs.duplicate(tab.id!);
         }
@@ -93,12 +96,12 @@ export class TabService {
 
     /**
      * Merges all windows into the current window while maintaining tab groupings.
-     * 
+     *
      * @async
      * @returns {Promise<void>}
      */
     async mergeAllWindows(): Promise<void> {
-        const confirmMergeWindows = (await this.prefService.getBooleanPreference("confirmMergeWindows")) ?? false;
+        const confirmMergeWindows = (await this.prefService.getBooleanPreference('confirmMergeWindows')) ?? false;
         if (confirmMergeWindows) {
             // console.log('last merge trigger time: ', this.lastMergeTriggerTime);
             // console.log('current time: ', Date.now());
@@ -139,14 +142,20 @@ export class TabService {
             for (const tab of win.tabs || []) {
                 if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) {
                     // console.log(`Moving tab ID: ${tab.id} from window ID: ${win.id} to target window ID: ${targetWindow.id}`);
-                    await chrome.tabs.move(tab.id!, { windowId: targetWindow.id, index: -1 });
+                    await chrome.tabs.move(tab.id!, {
+                        windowId: targetWindow.id,
+                        index: -1,
+                    });
                 }
             }
 
             // Move each tab group from the current window to the target window
             for (const group of tabGroups) {
                 // console.log(`Moving tabGroup ID: ${group.id} from window ID: ${win.id} to target window ID: ${targetWindow.id}`);
-                await chrome.tabGroups.move(group.id!, { windowId: targetWindow.id, index: -1 });
+                await chrome.tabGroups.move(group.id!, {
+                    windowId: targetWindow.id,
+                    index: -1,
+                });
             }
         }
 

@@ -8,16 +8,35 @@ const tabService = new TabService(prefService);
 const clipboardService = new ClipboardService(tabService, prefService);
 const contextMenuService = new ContextMenuService(tabService, prefService);
 
-chrome.runtime.onInstalled.addListener(() => {
-    console.log('BetterTabTool installed!');
-    contextMenuService.init();
-    prefService.init();
+// Initialize services function
+const initializeServices = async () => {
+    console.log('Initializing BetterTabTool services...');
+    await contextMenuService.init();
+    await prefService.init();
+
+    // Set up alarm to wake up service worker every 30 seconds
+    chrome.alarms.create('keepAlive', { periodInMinutes: 0.5 });
+};
+
+// Listen for alarm
+chrome.alarms.onAlarm.addListener(async (alarm) => {
+    if (alarm.name === 'keepAlive') {
+        console.log(`BetterTabTool service worker is alive @ ${new Date().toISOString()}`);
+        // Re-initialize context menu service to ensure listeners are registered after service worker restarts
+        await contextMenuService.init();
+    }
 });
 
-// Init the context menu service on startup
-chrome.runtime.onStartup.addListener(() => {
-    contextMenuService.init();
-    prefService.init();
+// Handle installation
+chrome.runtime.onInstalled.addListener(async () => {
+    console.log('BetterTabTool installed!');
+    await initializeServices();
+});
+
+// Handle startup
+chrome.runtime.onStartup.addListener(async () => {
+    console.log('BetterTabTool started!');
+    await initializeServices();
 });
 
 chrome.commands.onCommand.addListener(async (command) => {
@@ -37,12 +56,12 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
         try {
             switch (message.type) {
                 case 'PREF_setBooleanPreference': {
-                    const result = await prefService.setBooleanPreference(
-                        message.key,
-                        message.value
-                    );
+                    const result = await prefService.setBooleanPreference(message.key, message.value);
                     if (result === null) {
-                        return { success: false, error: 'Invalid preference key' };
+                        return {
+                            success: false,
+                            error: 'Invalid preference key',
+                        };
                     }
                     const prefs = await prefService.getAllPreferences();
                     return { success: true, preferences: prefs };
@@ -51,7 +70,10 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                 case 'PREF_getBooleanPreference': {
                     const value = await prefService.getBooleanPreference(message.key);
                     if (value === null) {
-                        return { success: false, error: 'Invalid preference key' };
+                        return {
+                            success: false,
+                            error: 'Invalid preference key',
+                        };
                     }
                     return { success: true, value };
                 }
@@ -71,9 +93,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     return { success: false, error: 'Unknown message type' };
             }
         } catch (error) {
-            let errorMessage = "Failed to handle message"
+            let errorMessage = 'Failed to handle message';
             if (error instanceof Error) {
-                errorMessage = error.message
+                errorMessage = error.message;
             }
             return { success: false, error: errorMessage };
         }

@@ -19,4 +19,19 @@ const preferenceCompareFn = (a: string, b: string): number => {
     return a.localeCompare(b);
 };
 
+function detectContext() {
+    if (typeof importScripts === 'function') {
+        console.log('Background page detected!');
+        return 'background';
+    }
+    if (window.location.pathname.includes('popup')) {
+        console.log('Popup detected!');
+        return 'popup';
+    }
+    return 'unknown';
+}
+
 export { preferenceCompareFn };
+
+export const isPopup = () => detectContext() === 'popup';
+export const isBackgroundPage = () => detectContext() === 'background';
