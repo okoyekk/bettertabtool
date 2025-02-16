@@ -2,7 +2,14 @@
 
 <a href="url"><img src="./src/assets/icon-512.png" align="center" height="100" width="100" ></a>
 
-## Setup Instructions
+## Setup Instructions (Prebuilt Packages)
+- Install via the [Chrome Web Store(CWS)](https://chromewebstore.google.com/detail/bettertabtool/gokjffmakbnlklbkhegcmldmahhafknc)
+- Sometimes the CWS verison is older than the latest version on the [Releases page](https://github.com/okoyekk/bettertabtool/releases) since it takes a few days for a new version to get approved. If this is the case, you can install the latest CRX file from the Releases page by:
+    -  Navigating to `chrome://extensions`
+    -  Downloading and extracting the CRX file from the zip then dragging it into the page
+    -  However, this only works if you have installed this extension from the Chrome Web Store previously due to security concerns
+
+## Setup Instructions (Manual Build)
 
 -   Clone the repo
 -   Run `npm run build` from the repo
