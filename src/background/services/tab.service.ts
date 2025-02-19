@@ -141,11 +141,18 @@ export class TabService {
             // Move each ungrouped tab from the current window to the target window
             for (const tab of win.tabs || []) {
                 if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) {
+                    let wasTabPinned = tab.pinned ?? false;
+                    let wasTabMuted = tab.mutedInfo?.muted ?? false;
                     // console.log(`Moving tab ID: ${tab.id} from window ID: ${win.id} to target window ID: ${targetWindow.id}`);
                     await chrome.tabs.move(tab.id!, {
                         windowId: targetWindow.id,
                         index: -1,
                     });
+                    // Retain pinned and muted state
+                    if (wasTabPinned || wasTabMuted) {
+                        chrome.tabs.update(tab.id!, { pinned: wasTabPinned, muted: wasTabMuted });
+                    }
+
                 }
             }
 
