@@ -126,12 +126,16 @@ export class TabService {
             return; // Nothing to merge
         }
 
-        // Merge all windows into the current window
+        // Merge all "normal" windows into the current window
         const targetWindow = await chrome.windows.getCurrent();
+        if (targetWindow.type !== 'normal') {
+            // console.log('Target window is not normal, nothing to merge.');
+            return; // Nothing to merge
+        }
         // console.log(`Target window ID: ${targetWindow.id}`);
 
         for (const win of windows) {
-            if (win.id === targetWindow.id) continue; // Skip the target window
+            if (win.id === targetWindow.id || win.type !== 'normal') continue; // Skip the target window and non-normal windows
 
             // console.log(`Processing window with ID: ${win.id}`);
 
@@ -152,7 +156,6 @@ export class TabService {
                     if (wasTabPinned || wasTabMuted) {
                         chrome.tabs.update(tab.id!, { pinned: wasTabPinned, muted: wasTabMuted });
                     }
-
                 }
             }
 
