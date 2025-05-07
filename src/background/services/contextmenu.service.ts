@@ -219,7 +219,8 @@ export class ContextMenuService {
      * @returns {Promise<void>} A promise that resolves when the context menu items are updated.
      */
     private updateWindowContextMenus = async (): Promise<void> => {
-        const windows = await chrome.windows.getAll({ populate: true });
+        // Filter to only get normal windows
+        const windows = await chrome.windows.getAll({ populate: true, windowTypes: ['normal'] });
         const windowIdToDescription = new Map<number, string>();
 
         windows.forEach((window: chrome.windows.Window) => {
