@@ -126,12 +126,16 @@ export class TabService {
             return; // Nothing to merge
         }
 
-        // Merge all windows into the current window
+        // Merge all "normal" windows into the current window
         const targetWindow = await chrome.windows.getCurrent();
+        if (targetWindow.type !== 'normal') {
+            // console.log('Target window is not normal, nothing to merge.');
+            return; // Nothing to merge
+        }
         // console.log(`Target window ID: ${targetWindow.id}`);
 
         for (const win of windows) {
-            if (win.id === targetWindow.id) continue; // Skip the target window
+            if (win.id === targetWindow.id || win.type !== 'normal') continue; // Skip the target window and non-normal windows
 
             // console.log(`Processing window with ID: ${win.id}`);
 
@@ -141,11 +145,17 @@ export class TabService {
             // Move each ungrouped tab from the current window to the target window
             for (const tab of win.tabs || []) {
                 if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) {
+                    let wasTabPinned = tab.pinned ?? false;
+                    let wasTabMuted = tab.mutedInfo?.muted ?? false;
                     // console.log(`Moving tab ID: ${tab.id} from window ID: ${win.id} to target window ID: ${targetWindow.id}`);
                     await chrome.tabs.move(tab.id!, {
                         windowId: targetWindow.id,
                         index: -1,
                     });
+                    // Retain pinned and muted state
+                    if (wasTabPinned || wasTabMuted) {
+                        chrome.tabs.update(tab.id!, { pinned: wasTabPinned, muted: wasTabMuted });
+                    }
                 }
             }
 
