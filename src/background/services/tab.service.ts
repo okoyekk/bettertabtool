@@ -174,7 +174,13 @@ export class TabService {
         // console.log(`Target window ID: ${targetWindow.id}`);
 
         for (const win of windows) {
-            if (win.id === targetWindow.id || win.type !== 'normal') continue; // Skip the target window and non-normal windows
+            // Skip the target window, non-normal type windows, and windows with states that aren't normal or maximized
+            if (
+                win.id === targetWindow.id ||
+                win.type !== 'normal' ||
+                (win.state !== 'normal' && win.state !== 'maximized')
+            )
+                continue;
 
             // Check if windows are on the same display when the preference is enabled
             if (mergeSameDisplayOnly) {
