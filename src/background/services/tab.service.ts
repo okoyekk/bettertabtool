@@ -94,6 +94,46 @@ export class TabService {
         }
     }
 
+    private async areWindowsOnSameDisplay(
+        window1: chrome.windows.Window,
+        window2: chrome.windows.Window,
+    ): Promise<boolean> {
+        try {
+            // Get all available displays
+            const displays = await chrome.system.display.getInfo();
+
+            // Helper to figure out which display a window is on
+            function getDisplayForWindow(
+                window: chrome.windows.Window,
+                displays: chrome.system.display.DisplayUnitInfo[],
+            ) {
+                const windowCenterX = window.left! + window.width! / 2;
+                const windowCenterY = window.top! + window.height! / 2;
+                // console.log(`Window center: (${windowCenterX}, ${windowCenterY})`);
+
+                return displays.find((display) => {
+                    const displayBounds = display.bounds;
+                    // console.log(`Display bounds: ${JSON.stringify(displayBounds)}`);
+
+                    return (
+                        windowCenterX >= displayBounds.left &&
+                        windowCenterX < displayBounds.left + displayBounds.width &&
+                        windowCenterY >= displayBounds.top &&
+                        windowCenterY < displayBounds.top + displayBounds.height
+                    );
+                });
+            }
+
+            const display1 = getDisplayForWindow(window1, displays);
+            const display2 = getDisplayForWindow(window2, displays);
+
+            return display1!.id === display2!.id;
+        } catch (error) {
+            console.error('Error checking if windows are on the same display', error);
+            return false;
+        }
+    }
+
     /**
      * Merges all windows into the current window while maintaining tab groupings.
      *
@@ -102,10 +142,9 @@ export class TabService {
      */
     async mergeAllWindows(): Promise<void> {
         const confirmMergeWindows = (await this.prefService.getBooleanPreference('confirmMergeWindows')) ?? false;
+        const mergeSameDisplayOnly = (await this.prefService.getBooleanPreference('mergeSameDisplayOnly')) ?? false;
+
         if (confirmMergeWindows) {
-            // console.log('last merge trigger time: ', this.lastMergeTriggerTime);
-            // console.log('current time: ', Date.now());
-            // console.log('time diff: ', Date.now() - this.lastMergeTriggerTime);
             // Do not merge if last trigger was over 1 second ago
             if (Date.now() - this.lastMergeTriggerTime > 1000) {
                 this.lastMergeTriggerTime = Date.now();
@@ -135,9 +174,21 @@ export class TabService {
         // console.log(`Target window ID: ${targetWindow.id}`);
 
         for (const win of windows) {
-            if (win.id === targetWindow.id || win.type !== 'normal') continue; // Skip the target window and non-normal windows
+            // Skip the target window, non-normal type windows, and windows with states that aren't normal or maximized
+            if (
+                win.id === targetWindow.id ||
+                win.type !== 'normal' ||
+                (win.state !== 'normal' && win.state !== 'maximized')
+            )
+                continue;
 
-            // console.log(`Processing window with ID: ${win.id}`);
+            // Check if windows are on the same display when the preference is enabled
+            if (mergeSameDisplayOnly) {
+                const areOnSameDisplay = await this.areWindowsOnSameDisplay(win, targetWindow);
+                if (!areOnSameDisplay) {
+                    continue;
+                }
+            }
 
             let tabGroups: chrome.tabGroups.TabGroup[] = await chrome.tabGroups.query({ windowId: win.id });
             // console.log(`Found ${tabGroups.length} tab groups in window ID: ${win.id}`);

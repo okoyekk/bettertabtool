@@ -1,9 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { userPreferencesToDescriptions } from '../constants';
 import { preferenceCompareFn } from '../utils';
-
-import { Checkbox, List, ListItem, Divider, ListItemText, Typography, CssBaseline } from '@mui/material';
 import { createTheme, ThemeProvider } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+import Typography from '@mui/material/Typography';
+import Divider from '@mui/material/Divider';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Checkbox from '@mui/material/Checkbox';
 
 const App: React.FC = () => {
     const [preferences, setPreferences] = useState<{ [key: string]: boolean }>({});
