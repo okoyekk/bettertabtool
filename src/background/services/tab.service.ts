@@ -145,9 +145,6 @@ export class TabService {
         const mergeSameDisplayOnly = (await this.prefService.getBooleanPreference('mergeSameDisplayOnly')) ?? false;
 
         if (confirmMergeWindows) {
-            // console.log('last merge trigger time: ', this.lastMergeTriggerTime);
-            // console.log('current time: ', Date.now());
-            // console.log('time diff: ', Date.now() - this.lastMergeTriggerTime);
             // Do not merge if last trigger was over 1 second ago
             if (Date.now() - this.lastMergeTriggerTime > 1000) {
                 this.lastMergeTriggerTime = Date.now();
