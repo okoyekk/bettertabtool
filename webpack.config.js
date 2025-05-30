@@ -7,10 +7,14 @@ module.exports = {
         popup: './src/popup/index.tsx',
         background: './src/background/index.ts',
     },
-
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: '[name].js',
+    },
+    performance: {
+        maxEntrypointSize: 512000,
+        maxAssetSize: 512000,
+        hints: 'warning'
     },
     resolve: {
         extensions: ['.ts', '.tsx', '.js', '.css'],
