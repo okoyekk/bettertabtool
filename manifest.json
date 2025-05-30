@@ -13,7 +13,8 @@
         "scripting",
         "notifications",
         "contextMenus",
-        "alarms"
+        "alarms",
+        "system.display"
     ],
     "icons": {
         "16": "assets/icon-16.png",
