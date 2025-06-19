@@ -9,3 +9,6 @@ dist.crx
 
 # OS specific
 .DS_Store
+
+# Notes
+scratch/
