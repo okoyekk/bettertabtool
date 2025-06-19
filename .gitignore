@@ -2,6 +2,7 @@
 node_modules/
 
 # Output directories
+coverage/
 dist/
 dist.zip
 dist.pem
