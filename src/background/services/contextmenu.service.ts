@@ -245,7 +245,7 @@ export class ContextMenuService {
         await this.createOpenLinkInWindowContextMenu();
 
         // Sequentially add each window to context menu as a subitem of "Open Link in Specific Window"
-        windowIdToDescription.forEach(async (description: string, windowId: number) => {
+        for (const [windowId, description] of windowIdToDescription.entries()) {
             await new Promise<void>((resolve) => {
                 chrome.contextMenus.create(
                     {
@@ -257,7 +257,7 @@ export class ContextMenuService {
                     () => resolve(),
                 );
             });
-        });
+        }
     };
 
     /**
@@ -272,7 +272,7 @@ export class ContextMenuService {
         if (groups.length > 0) {
             await this.createOpenLinkInGroupContextMenu();
             // Sequentially add each tab group to context menu as a subitem of "Open Link in Group"
-            groups.forEach(async (group) => {
+            for (const group of groups) {
                 if (group.title!.length > 0) {
                     await new Promise<void>((resolve) => {
                         chrome.contextMenus.create(
@@ -286,7 +286,7 @@ export class ContextMenuService {
                         );
                     });
                 }
-            });
+            }
         }
     };
 
