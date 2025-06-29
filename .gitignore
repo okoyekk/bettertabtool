@@ -2,6 +2,7 @@
 node_modules/
 
 # Output directories
+coverage/
 dist/
 dist.zip
 dist.pem
@@ -9,3 +10,6 @@ dist.crx
 
 # OS specific
 .DS_Store
+
+# Notes
+scratch/
