@@ -13,8 +13,12 @@ import { PrefService } from './pref.service';
 describe('PrefServiceTest', () => {
     let chromeStorageLocalSetMock: jest.Mock;
     let chromeStorageLocalGetMock: jest.Mock;
+    let consoleLogSpy: jest.SpyInstance;
 
     beforeEach(() => {
+        consoleLogSpy = jest.spyOn(console, 'log').mockImplementation(() => {});
+        jest.spyOn(console, 'error').mockImplementation(() => {});
+
         chromeStorageLocalSetMock = jest.fn();
         chromeStorageLocalGetMock = jest.fn();
 
@@ -26,8 +30,11 @@ describe('PrefServiceTest', () => {
                 },
             },
         };
+    });
 
-        jest.spyOn(console, 'log').mockImplementation(() => {});
+    afterEach(() => {
+        consoleLogSpy.mockRestore();
+        jest.restoreAllMocks();
     });
 
     afterEach(() => {
