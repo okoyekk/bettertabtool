@@ -21,11 +21,9 @@ const preferenceCompareFn = (a: string, b: string): number => {
 
 function detectContext() {
     if (typeof importScripts === 'function') {
-        console.log('Background page detected!');
         return 'background';
     }
     if (window.location.pathname.includes('popup')) {
-        console.log('Popup detected!');
         return 'popup';
     }
     return 'unknown';

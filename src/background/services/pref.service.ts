@@ -12,17 +12,14 @@ export class PrefService {
     async init() {
         // Intializes preferences with default values (false) if not set
         const prefs = await this.getAllPreferences();
-        console.log('===================');
-        console.log(`Current preferences: ${JSON.stringify(prefs)}`);
-        console.log('===================');
 
         for (const pref in userPreferencesToDescriptions) {
             if (prefs[pref] === undefined) {
-                console.log(`Preference ${pref} not found, setting to false`);
                 await this.setBooleanPreference(pref, false);
             }
         }
     }
+
     /**
      * Sets a boolean preference in local storage.
      *
@@ -38,7 +35,6 @@ export class PrefService {
         }
 
         await chrome.storage.local.set({ [key]: value });
-        console.log(`Preference ${key} set to ${value}`);
         return true;
     }
 
@@ -56,7 +52,6 @@ export class PrefService {
         }
 
         const result = await chrome.storage.local.get(key);
-        console.log(`Preference ${key} is ${result[key]}`);
         return result[key];
     }
 
