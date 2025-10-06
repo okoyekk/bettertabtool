@@ -83,6 +83,7 @@ describe('TabService', () => {
                 TAB_GROUP_ID_NONE,
             },
             windows: {
+                create: jest.fn(),
                 getCurrent: jest.fn(),
                 getAll: jest.fn(),
             },
@@ -509,6 +510,45 @@ describe('TabService', () => {
             await tabService.mergeAllWindows();
             expect(mockChrome.tabs.move).not.toHaveBeenCalled();
             expect(mockChrome.tabGroups.move).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('popOutCurrentTab', () => {
+        it('popOutCurrentTab_shouldPopOutCurrentTab', async () => {
+            const mockTab = { id: 1, width: 800, height: 600 };
+            mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.create.mockResolvedValue({});
+
+            await tabService.popOutCurrentTab();
+
+            expect(mockChrome.tabs.query).toHaveBeenCalledWith({
+                active: true,
+                currentWindow: true,
+            });
+            expect(mockChrome.windows.create).toHaveBeenCalledWith({
+                tabId: mockTab.id,
+                type: 'normal',
+                focused: true,
+            });
+        });
+
+        it('popOutCurrentTab_shouldLogErrorIfNoActiveTab', async () => {
+            mockChrome.tabs.query.mockResolvedValue([]);
+
+            await tabService.popOutCurrentTab();
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith('No id found for current tab');
+            expect(mockChrome.windows.create).not.toHaveBeenCalled();
+        });
+
+        it('popOutCurrentTab_shouldHandleErrorGracefully', async () => {
+            const mockTab = { id: 1, width: 800, height: 600 };
+            mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.create.mockRejectedValue(new Error('Create window failed'));
+
+            await tabService.popOutCurrentTab();
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith('Error popping out tab: ', expect.any(Error));
         });
     });
 });

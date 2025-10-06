@@ -54,6 +54,9 @@
                 "default": "Ctrl+Shift+Comma"
             },
             "description": "Merge all windows"
+        },
+        "pop-out-current-tab": {
+            "description": "Pop out current tab into a new window. Recommendation: Ctrl+Win+Period / Command+Ctrl+Period"
         }
     }
 }

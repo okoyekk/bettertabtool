@@ -94,6 +94,30 @@ export class TabService {
         }
     }
 
+    /**
+     * Pops out the current tab into a new window.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
+    async popOutCurrentTab(): Promise<void> {
+        try {
+            const tab = await this.getActiveTabInCurrentWindow();
+            if (!tab?.id) {
+                console.error('No id found for current tab');
+                return;
+            }
+
+            await chrome.windows.create({
+                tabId: tab.id,
+                type: 'normal',
+                focused: true,
+            });
+        } catch (err) {
+            console.error('Error popping out tab: ', err);
+        }
+    }
+
     private async areWindowsOnSameDisplay(
         window1: chrome.windows.Window,
         window2: chrome.windows.Window,

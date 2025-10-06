@@ -48,6 +48,8 @@ chrome.commands.onCommand.addListener(async (command) => {
         await tabService.duplicateCurrentTab();
     } else if (command === 'merge-all-windows') {
         await tabService.mergeAllWindows();
+    } else if (command === 'pop-out-current-tab') {
+        await tabService.popOutCurrentTab();
     }
 });
 
