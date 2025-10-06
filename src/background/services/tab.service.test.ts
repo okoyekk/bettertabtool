@@ -86,6 +86,7 @@ describe('TabService', () => {
                 create: jest.fn(),
                 getCurrent: jest.fn(),
                 getAll: jest.fn(),
+                get: jest.fn(),
             },
             system: {
                 display: {
@@ -515,8 +516,9 @@ describe('TabService', () => {
 
     describe('popOutCurrentTab', () => {
         it('popOutCurrentTab_shouldPopOutCurrentTab', async () => {
-            const mockTab = { id: 1, width: 800, height: 600 };
+            const mockTab = { id: 1, windowId: 2, width: 800, height: 600 };
             mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.get.mockResolvedValue({ type: 'normal' });
             mockChrome.windows.create.mockResolvedValue({});
 
             await tabService.popOutCurrentTab();
@@ -549,6 +551,16 @@ describe('TabService', () => {
             await tabService.popOutCurrentTab();
 
             expect(consoleErrorSpy).toHaveBeenCalledWith('Error popping out tab: ', expect.any(Error));
+        });
+
+        it('popOutCurrentTab_shouldNotPopOutIfWindowIsNotNormal', async () => {
+            const mockTab = { id: 1, windowId: 2 };
+            mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.get.mockResolvedValue({ type: 'popup' });
+
+            await tabService.popOutCurrentTab();
+
+            expect(mockChrome.windows.create).not.toHaveBeenCalled();
         });
     });
 });

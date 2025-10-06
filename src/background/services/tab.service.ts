@@ -105,6 +105,11 @@ export class TabService {
                 return;
             }
 
+            const window = await chrome.windows.get(tab.windowId);
+            if (window.type !== 'normal') {
+                return;
+            }
+
             await chrome.windows.create({
                 tabId: tab.id,
                 type: 'normal',
