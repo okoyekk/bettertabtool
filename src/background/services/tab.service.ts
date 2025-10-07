@@ -105,8 +105,13 @@ export class TabService {
                 return;
             }
 
-            const window = await chrome.windows.get(tab.windowId);
+            const window = await chrome.windows.get(tab.windowId, { populate: true });
+            // Skip non-normal windows
             if (window.type !== 'normal') {
+                return;
+            }
+            // Skip single-tab windows
+            if (window.tabs && window.tabs.length <= 1) {
                 return;
             }
 

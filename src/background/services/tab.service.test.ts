@@ -518,7 +518,7 @@ describe('TabService', () => {
         it('popOutCurrentTab_shouldPopOutCurrentTab', async () => {
             const mockTab = { id: 1, windowId: 2, width: 800, height: 600 };
             mockChrome.tabs.query.mockResolvedValue([mockTab]);
-            mockChrome.windows.get.mockResolvedValue({ type: 'normal' });
+            mockChrome.windows.get.mockResolvedValue({ type: 'normal', tabs: [{ id: 1 }, { id: 2 }] });
             mockChrome.windows.create.mockResolvedValue({});
 
             await tabService.popOutCurrentTab();
@@ -557,6 +557,16 @@ describe('TabService', () => {
             const mockTab = { id: 1, windowId: 2 };
             mockChrome.tabs.query.mockResolvedValue([mockTab]);
             mockChrome.windows.get.mockResolvedValue({ type: 'popup' });
+
+            await tabService.popOutCurrentTab();
+
+            expect(mockChrome.windows.create).not.toHaveBeenCalled();
+        });
+
+        it('popOutCurrentTab_shouldDoNothingIfTabIsAlone', async () => {
+            const mockTab = { id: 1, windowId: 2 };
+            mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.get.mockResolvedValue({ type: 'normal', tabs: [{ id: 1 }] });
 
             await tabService.popOutCurrentTab();
 
