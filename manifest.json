@@ -56,7 +56,10 @@
             "description": "Merge all windows"
         },
         "pop-out-current-tab": {
-            "description": "Pop out current tab into a new window. Recommendation: Ctrl+Win+Period / Command+Ctrl+Period"
+            "description": "Pop out current tab into a new window."
+        },
+        "close-all-popup-windows": {
+            "description": "Close all popup windows"
         }
     }
 }

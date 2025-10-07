@@ -46,6 +46,8 @@ chrome.commands.onCommand.addListener(async (command) => {
         await tabService.mergeAllWindows();
     } else if (command === 'pop-out-current-tab') {
         await tabService.popOutCurrentTab();
+    } else if (command === 'close-all-popup-windows') {
+        await tabService.closeAllPopupWindows();
     }
 });
 

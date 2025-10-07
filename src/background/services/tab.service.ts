@@ -125,6 +125,29 @@ export class TabService {
         }
     }
 
+    /**
+     * Closes all popup windows.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
+    async closeAllPopupWindows(): Promise<void> {
+        try {
+            const windows = await chrome.windows.getAll();
+            const popupWindows = windows.filter((win) => win.type === 'popup');
+
+            if (popupWindows.length === 0) {
+                return;
+            }
+
+            for (const win of popupWindows) {
+                await chrome.windows.remove(win.id!);
+            }
+        } catch (err) {
+            console.error('Error closing popup windows: ', err);
+        }
+    }
+
     private async areWindowsOnSameDisplay(
         window1: chrome.windows.Window,
         window2: chrome.windows.Window,
