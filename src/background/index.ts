@@ -10,7 +10,6 @@ const contextMenuService = new ContextMenuService(tabService, prefService);
 
 // Initialize services function
 const initializeServices = async () => {
-    console.log('Initializing BetterTabTool services...');
     await contextMenuService.init();
     await prefService.init();
 
@@ -21,7 +20,6 @@ const initializeServices = async () => {
 // Listen for alarm
 chrome.alarms.onAlarm.addListener(async (alarm) => {
     if (alarm.name === 'keepAlive') {
-        console.log(`BetterTabTool service worker is alive @ ${new Date().toISOString()}`);
         // Re-initialize context menu service to ensure listeners are registered after service worker restarts
         await contextMenuService.init();
     }
@@ -29,13 +27,11 @@ chrome.alarms.onAlarm.addListener(async (alarm) => {
 
 // Handle installation
 chrome.runtime.onInstalled.addListener(async () => {
-    console.log('BetterTabTool installed!');
     await initializeServices();
 });
 
 // Handle startup
 chrome.runtime.onStartup.addListener(async () => {
-    console.log('BetterTabTool started!');
     await initializeServices();
 });
 
@@ -48,6 +44,10 @@ chrome.commands.onCommand.addListener(async (command) => {
         await tabService.duplicateCurrentTab();
     } else if (command === 'merge-all-windows') {
         await tabService.mergeAllWindows();
+    } else if (command === 'pop-out-current-tab') {
+        await tabService.popOutCurrentTab();
+    } else if (command === 'close-all-popup-windows') {
+        await tabService.closeAllPopupWindows();
     }
 });
 

@@ -83,8 +83,11 @@ describe('TabService', () => {
                 TAB_GROUP_ID_NONE,
             },
             windows: {
+                create: jest.fn(),
                 getCurrent: jest.fn(),
                 getAll: jest.fn(),
+                get: jest.fn(),
+                remove: jest.fn(),
             },
             system: {
                 display: {
@@ -509,6 +512,105 @@ describe('TabService', () => {
             await tabService.mergeAllWindows();
             expect(mockChrome.tabs.move).not.toHaveBeenCalled();
             expect(mockChrome.tabGroups.move).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('popOutCurrentTab', () => {
+        it('popOutCurrentTab_shouldPopOutCurrentTab', async () => {
+            const mockTab = { id: 1, windowId: 2, width: 800, height: 600 };
+            mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.get.mockResolvedValue({ type: 'normal', tabs: [{ id: 1 }, { id: 2 }] });
+            mockChrome.windows.create.mockResolvedValue({});
+
+            await tabService.popOutCurrentTab();
+
+            expect(mockChrome.tabs.query).toHaveBeenCalledWith({
+                active: true,
+                currentWindow: true,
+            });
+            expect(mockChrome.windows.create).toHaveBeenCalledWith({
+                tabId: mockTab.id,
+                type: 'normal',
+                focused: true,
+            });
+        });
+
+        it('popOutCurrentTab_shouldLogErrorIfNoActiveTab', async () => {
+            mockChrome.tabs.query.mockResolvedValue([]);
+
+            await tabService.popOutCurrentTab();
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith('No id found for current tab');
+            expect(mockChrome.windows.create).not.toHaveBeenCalled();
+        });
+
+        it('popOutCurrentTab_shouldHandleErrorGracefully', async () => {
+            const mockTab = { id: 1, width: 800, height: 600 };
+            mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.create.mockRejectedValue(new Error('Create window failed'));
+
+            await tabService.popOutCurrentTab();
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith('Error popping out tab: ', expect.any(Error));
+        });
+
+        it('popOutCurrentTab_shouldNotPopOutIfWindowIsNotNormal', async () => {
+            const mockTab = { id: 1, windowId: 2 };
+            mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.get.mockResolvedValue({ type: 'popup' });
+
+            await tabService.popOutCurrentTab();
+
+            expect(mockChrome.windows.create).not.toHaveBeenCalled();
+        });
+
+        it('popOutCurrentTab_shouldDoNothingIfTabIsAlone', async () => {
+            const mockTab = { id: 1, windowId: 2 };
+            mockChrome.tabs.query.mockResolvedValue([mockTab]);
+            mockChrome.windows.get.mockResolvedValue({ type: 'normal', tabs: [{ id: 1 }] });
+
+            await tabService.popOutCurrentTab();
+
+            expect(mockChrome.windows.create).not.toHaveBeenCalled();
+        });
+    });
+
+    describe('closeAllPopupWindows', () => {
+        it('closeAllPopupWindows_shouldCloseAllPopupWindows', async () => {
+            const mockWindows = [
+                { id: 1, type: 'normal' },
+                { id: 2, type: 'popup' },
+                { id: 3, type: 'popup' },
+                { id: 4, type: 'normal' },
+            ];
+            mockChrome.windows.getAll.mockResolvedValue(mockWindows);
+            mockChrome.windows.remove.mockResolvedValue();
+
+            await tabService.closeAllPopupWindows();
+
+            expect(mockChrome.windows.remove).toHaveBeenCalledTimes(2);
+            expect(mockChrome.windows.remove).toHaveBeenCalledWith(2);
+            expect(mockChrome.windows.remove).toHaveBeenCalledWith(3);
+        });
+
+        it('closeAllPopupWindows_shouldDoNothingIfNoPopupWindows', async () => {
+            const mockWindows = [
+                { id: 1, type: 'normal' },
+                { id: 4, type: 'normal' },
+            ];
+            mockChrome.windows.getAll.mockResolvedValue(mockWindows);
+
+            await tabService.closeAllPopupWindows();
+
+            expect(mockChrome.windows.remove).not.toHaveBeenCalled();
+        });
+
+        it('closeAllPopupWindows_shouldHandleErrorsGracefully', async () => {
+            mockChrome.windows.getAll.mockRejectedValue(new Error('Get all windows failed'));
+
+            await tabService.closeAllPopupWindows();
+
+            expect(consoleErrorSpy).toHaveBeenCalledWith('Error closing popup windows: ', expect.any(Error));
         });
     });
 });

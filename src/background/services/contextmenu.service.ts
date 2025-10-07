@@ -24,7 +24,6 @@ export class ContextMenuService {
             return;
         }
 
-        console.log('Initializing ContextMenuService...');
         // Remove all existing listeners
         this.unregisterTabEventListeners();
         this.unregisterTabGroupEventListeners();
@@ -95,7 +94,6 @@ export class ContextMenuService {
                 windowId: windowId,
                 active: shouldNewTabBeActive!,
             });
-            // console.log(`Opened link ${linkUrl} in window ${windowId}`);
         }
 
         //  Open link in a specific group
@@ -103,7 +101,6 @@ export class ContextMenuService {
         if (groupIdMatcher) {
             const groupId = parseInt(groupIdMatcher[1]);
             this.tabService.openNewTabInGroup(linkUrl, groupId);
-            // console.log(`Opened link ${linkUrl} in group ${groupId}`);
         }
     };
 
@@ -224,7 +221,6 @@ export class ContextMenuService {
         const windowIdToDescription = new Map<number, string>();
 
         windows.forEach((window: chrome.windows.Window) => {
-            // console.log("updateWindowContextMenu tabs: ", window.tabs);
             if (window.tabs) {
                 // Map window ids to descriptions of form: [id, "{first tab title}(...) and X other tabs"]
                 let description = `${this.tabService.getActiveTabInWindow(window)?.title}`;
@@ -298,7 +294,6 @@ export class ContextMenuService {
     private updateContextMenu = async (): Promise<void> => {
         if (this.isContextMenuUpdating) {
             // Prevent multiple updates at the same time
-            console.log('updateContextMenu is already updating');
             return;
         }
         this.isContextMenuUpdating = true;

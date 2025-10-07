@@ -48,7 +48,6 @@ export class TabService {
 
             const shouldNewTabBeActive = (await this.prefService.getBooleanPreference('makeNewTabsActive')) ?? false;
             // Create a new tab
-            // console.log(`Creating new tab in group (${currentGroupId})`);
             const newTab = await chrome.tabs.create({
                 openerTabId: tab.id,
                 active: shouldNewTabBeActive,
@@ -61,13 +60,11 @@ export class TabService {
             }
             // Create a group with just the current tab if one doesn't exist already
             if (currentGroupId === -1) {
-                // console.log(`Creating a new group with current tab`);
                 currentGroupId = await chrome.tabs.group({
                     tabIds: [tab.id],
                 });
             }
             // Add the new tab to the group
-            // console.log(`Adding new tab to group ${currentGroupId}`);
             newTab.groupId = currentGroupId;
             chrome.tabs.group({
                 tabIds: [newTab.id],
@@ -94,6 +91,63 @@ export class TabService {
         }
     }
 
+    /**
+     * Pops out the current tab into a new window.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
+    async popOutCurrentTab(): Promise<void> {
+        try {
+            const tab = await this.getActiveTabInCurrentWindow();
+            if (!tab?.id) {
+                console.error('No id found for current tab');
+                return;
+            }
+
+            const window = await chrome.windows.get(tab.windowId, { populate: true });
+            // Skip non-normal windows
+            if (window.type !== 'normal') {
+                return;
+            }
+            // Skip single-tab windows
+            if (window.tabs && window.tabs.length <= 1) {
+                return;
+            }
+
+            await chrome.windows.create({
+                tabId: tab.id,
+                type: 'normal',
+                focused: true,
+            });
+        } catch (err) {
+            console.error('Error popping out tab: ', err);
+        }
+    }
+
+    /**
+     * Closes all popup windows.
+     *
+     * @async
+     * @returns {Promise<void>}
+     */
+    async closeAllPopupWindows(): Promise<void> {
+        try {
+            const windows = await chrome.windows.getAll();
+            const popupWindows = windows.filter((win) => win.type === 'popup');
+
+            if (popupWindows.length === 0) {
+                return;
+            }
+
+            for (const win of popupWindows) {
+                await chrome.windows.remove(win.id!);
+            }
+        } catch (err) {
+            console.error('Error closing popup windows: ', err);
+        }
+    }
+
     private async areWindowsOnSameDisplay(
         window1: chrome.windows.Window,
         window2: chrome.windows.Window,
@@ -109,11 +163,9 @@ export class TabService {
             ) {
                 const windowCenterX = window.left! + window.width! / 2;
                 const windowCenterY = window.top! + window.height! / 2;
-                // console.log(`Window center: (${windowCenterX}, ${windowCenterY})`);
 
                 return displays.find((display) => {
                     const displayBounds = display.bounds;
-                    // console.log(`Display bounds: ${JSON.stringify(displayBounds)}`);
 
                     return (
                         windowCenterX >= displayBounds.left &&
@@ -153,25 +205,19 @@ export class TabService {
         }
         // Update the last merge trigger time
         this.lastMergeTriggerTime = Date.now();
-        // console.log('Starting to merge all windows into the current window.');
 
         // Get all windows
         const windows = await chrome.windows.getAll({ populate: true });
-        // console.log(`Found ${windows.length} windows.`);
-        // console.log(windows);
 
         if (windows.length <= 1) {
-            // console.log('Nothing to merge, only one window is open.');
             return; // Nothing to merge
         }
 
         // Merge all "normal" windows into the current window
         const targetWindow = await chrome.windows.getCurrent();
         if (targetWindow.type !== 'normal') {
-            // console.log('Target window is not normal, nothing to merge.');
             return; // Nothing to merge
         }
-        // console.log(`Target window ID: ${targetWindow.id}`);
 
         for (const win of windows) {
             // Skip the target window, non-normal type windows, and windows with states that aren't normal or maximized
@@ -191,14 +237,11 @@ export class TabService {
             }
 
             let tabGroups: chrome.tabGroups.TabGroup[] = await chrome.tabGroups.query({ windowId: win.id });
-            // console.log(`Found ${tabGroups.length} tab groups in window ID: ${win.id}`);
-
             // Move each ungrouped tab from the current window to the target window
             for (const tab of win.tabs || []) {
                 if (tab.groupId === chrome.tabGroups.TAB_GROUP_ID_NONE) {
                     let wasTabPinned = tab.pinned ?? false;
                     let wasTabMuted = tab.mutedInfo?.muted ?? false;
-                    // console.log(`Moving tab ID: ${tab.id} from window ID: ${win.id} to target window ID: ${targetWindow.id}`);
                     await chrome.tabs.move(tab.id!, {
                         windowId: targetWindow.id,
                         index: -1,
@@ -212,14 +255,11 @@ export class TabService {
 
             // Move each tab group from the current window to the target window
             for (const group of tabGroups) {
-                // console.log(`Moving tabGroup ID: ${group.id} from window ID: ${win.id} to target window ID: ${targetWindow.id}`);
                 await chrome.tabGroups.move(group.id!, {
                     windowId: targetWindow.id,
                     index: -1,
                 });
             }
         }
-
-        // console.log('Finished merging all windows.');
     }
 }
