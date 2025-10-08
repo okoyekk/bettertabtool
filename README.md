@@ -38,3 +38,4 @@ Open link in Specific Window
 ### Default Keybinds
 
 <a href="url"><img src="./media/default-keybinds.png" align="center"></a>
+To set custom keybinds or unset default keybinds, visit chrome://extensions/shortcuts
