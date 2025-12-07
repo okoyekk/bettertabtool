@@ -55,6 +55,41 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const handleMessage = async () => {
         try {
             switch (message.type) {
+                case 'PREF_setPreference': {
+                    const result = await prefService.setPreference(message.key, message.value);
+                    if (result === null) {
+                        return {
+                            success: false,
+                            error: 'Invalid preference key',
+                        };
+                    }
+                    const prefs = await prefService.getAllPreferences();
+                    return { success: true, preferences: prefs };
+                }
+
+                case 'PREF_getPreference': {
+                    const value = await prefService.getPreference(message.key);
+                    if (value === null) {
+                        return {
+                            success: false,
+                            error: 'Invalid preference key',
+                        };
+                    }
+                    return { success: true, value };
+                }
+
+                case 'PREF_getAllPreferences': {
+                    const prefs = await prefService.getAllPreferences();
+                    return { success: true, preferences: prefs };
+                }
+
+                case 'PREF_removeAllPreferences': {
+                    await prefService.removeAllPreferences();
+                    const prefs = await prefService.getAllPreferences();
+                    return { success: true, preferences: prefs };
+                }
+
+                // Deprecated methods for backward compatibility during transition
                 case 'PREF_setBooleanPreference': {
                     const result = await prefService.setBooleanPreference(message.key, message.value);
                     if (result === null) {
@@ -76,17 +111,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                         };
                     }
                     return { success: true, value };
-                }
-
-                case 'PREF_getAllPreferences': {
-                    const prefs = await prefService.getAllPreferences();
-                    return { success: true, preferences: prefs };
-                }
-
-                case 'PREF_removeAllPreferences': {
-                    await prefService.removeAllPreferences();
-                    const prefs = await prefService.getAllPreferences();
-                    return { success: true, preferences: prefs };
                 }
 
                 default:
