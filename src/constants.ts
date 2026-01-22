@@ -8,27 +8,27 @@ interface PreferenceDescription<T> {
 
 const userPreferencesToDescriptions: { [K: string]: PreferenceDescription<any> } = {
     showCopyNotification: {
-        description: 'Show notification on Copy Current Tab URL',
+        description: 'Notify on Copy Tab URL',
         defaultValue: false,
         type: 'boolean',
     },
     makeNewTabsActive: {
-        description: 'Make newly created tabs active',
+        description: 'New tabs are active',
         defaultValue: false,
         type: 'boolean',
     },
     confirmMergeWindows: {
-        description: 'Merge when the shortcut is pressed twice quickly',
+        description: 'Confirm merging with double press',
         defaultValue: false,
         type: 'boolean',
     },
     mergeSameDisplayOnly: {
-        description: 'Merge windows only if they are on the same display',
+        description: 'Merge windows on same display only',
         defaultValue: false,
         type: 'boolean',
     },
     themeMode: {
-        description: 'Theme mode (light/dark/auto)',
+        description: 'Theme mode',
         defaultValue: 'auto',
         type: 'string',
     },

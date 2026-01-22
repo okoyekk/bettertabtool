@@ -9,9 +9,8 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Checkbox from '@mui/material/Checkbox';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import Radio from '@mui/material/Radio';
+import ToggleButton from '@mui/material/ToggleButton';
+import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 
 const App: React.FC = () => {
     const [preferences, setPreferences] = useState<{ [key: string]: any }>({});
@@ -85,39 +84,32 @@ const App: React.FC = () => {
                                                 component="p"
                                                 variant="body1"
                                             >
-                                                {key}
-                                            </Typography>
-                                        }
-                                        secondary={
-                                            <Typography
-                                                sx={{
-                                                    color: 'text.primary',
-                                                    display: 'inline',
-                                                }}
-                                                component="span"
-                                                variant="body2"
-                                            >
                                                 {userPreferencesToDescriptions[key].description}
                                             </Typography>
                                         }
                                     />
                                     {key === 'themeMode' ? (
-                                        <RadioGroup
-                                            aria-label="theme-mode"
-                                            name="theme-mode-group"
+                                        <ToggleButtonGroup
                                             value={preferences[key] || 'auto'}
-                                            onChange={(event) =>
-                                                handlePreferenceChange(key, event.target.value as ThemeMode)
-                                            }
+                                            exclusive
+                                            onChange={(event, newValue) => {
+                                                if (newValue !== null) {
+                                                    handlePreferenceChange(key, newValue as ThemeMode);
+                                                }
+                                            }}
+                                            aria-label="theme-mode"
+                                            size="small"
                                         >
-                                            <FormControlLabel value="light" control={<Radio />} label="Light" />
-                                            <FormControlLabel value="dark" control={<Radio />} label="Dark" />
-                                            <FormControlLabel
-                                                value="auto"
-                                                control={<Radio />}
-                                                label={`Auto${preferences['themeMode'] === 'auto' ? ` (${systemTheme})` : ''}`}
-                                            />
-                                        </RadioGroup>
+                                            <ToggleButton value="light" aria-label="light">
+                                                Light
+                                            </ToggleButton>
+                                            <ToggleButton value="dark" aria-label="dark">
+                                                Dark
+                                            </ToggleButton>
+                                            <ToggleButton value="auto" aria-label="auto">
+                                                Auto
+                                            </ToggleButton>
+                                        </ToggleButtonGroup>
                                     ) : (
                                         <Checkbox
                                             id={`${key}-toggle`}
