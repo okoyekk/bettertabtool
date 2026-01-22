@@ -8,9 +8,10 @@
 }
 
 body {
-    width: 350px;
+    width: 360px;
     height: auto;
-    max-height: 450px;
+    max-height: 400px;
     margin: 0;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
 }
