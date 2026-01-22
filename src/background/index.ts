@@ -89,30 +89,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     return { success: true, preferences: prefs };
                 }
 
-                // Deprecated methods for backward compatibility during transition
-                case 'PREF_setBooleanPreference': {
-                    const result = await prefService.setBooleanPreference(message.key, message.value);
-                    if (result === null) {
-                        return {
-                            success: false,
-                            error: 'Invalid preference key',
-                        };
-                    }
-                    const prefs = await prefService.getAllPreferences();
-                    return { success: true, preferences: prefs };
-                }
-
-                case 'PREF_getBooleanPreference': {
-                    const value = await prefService.getBooleanPreference(message.key);
-                    if (value === null) {
-                        return {
-                            success: false,
-                            error: 'Invalid preference key',
-                        };
-                    }
-                    return { success: true, value };
-                }
-
                 default:
                     return { success: false, error: 'Unknown message type' };
             }

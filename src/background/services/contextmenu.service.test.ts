@@ -121,7 +121,7 @@ describe('ContextMenuService', () => {
 
         it('contextMenuClickHandler_shouldOpenLinkInWindowWhenWindowIdMatches', async () => {
             const info = { [MENU_ITEM_ID_PROP]: WINDOW_MENU_ITEM_ID, [LINK_URL_PROP]: TEST_URL };
-            prefService.getBooleanPreference.mockResolvedValue(true);
+            prefService.getPreference.mockResolvedValue(true);
 
             await clickHandler(info);
 

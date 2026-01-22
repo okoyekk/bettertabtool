@@ -83,7 +83,7 @@ export class ContextMenuService {
             return;
         }
 
-        const shouldNewTabBeActive = await this.prefService.getBooleanPreference('makeNewTabsActive');
+        const shouldNewTabBeActive = await this.prefService.getPreference('makeNewTabsActive');
 
         //  Open link in a specific window
         const windowIdMatcher = info.menuItemId.toString().match(/^open-link-in-specific-window-(\d+)$/);

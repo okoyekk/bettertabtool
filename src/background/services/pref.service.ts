@@ -11,16 +11,13 @@ export class PrefService {
      */
     async init() {
         // Intializes preferences with default values if not set
-        const prefs = await this.getAllPreferences();
+        const allKeys = Object.keys(userPreferencesToDescriptions);
+        const rawPrefs = await chrome.storage.local.get(allKeys);
 
-        for (const pref in userPreferencesToDescriptions) {
-            if (prefs[pref] === undefined) {
+        for (const key in userPreferencesToDescriptions) {
+            if (rawPrefs[key] === undefined) {
                 // Set default values based on preference type
-                if (pref === 'themeMode') {
-                    await this.setPreference(pref, 'auto');
-                } else {
-                    await this.setPreference(pref, false);
-                }
+                await this.setPreference(key, userPreferencesToDescriptions[key].defaultValue);
             }
         }
     }
@@ -31,29 +28,22 @@ export class PrefService {
      * @param {string} key - The key of the preference to set.
      * @param {any} value - The value to set for the preference.
      * @returns {Promise<true | null>} Returns true if the preference is set successfully,
-     * or null if the preference key is invalid.
+     * or null if the preference key is invalid or value type is incorrect.
      */
     async setPreference(key: string, value: any): Promise<boolean | null> {
-        if (!Object.keys(userPreferencesToDescriptions).includes(key)) {
+        if (!userPreferencesToDescriptions[key]) {
             console.error(`Preference ${key} is not valid`);
+            return null;
+        }
+
+        const expectedType = userPreferencesToDescriptions[key].type;
+        if (typeof value !== expectedType) {
+            console.error(`Invalid type for preference ${key}. Expected ${expectedType}, got ${typeof value}`);
             return null;
         }
 
         await chrome.storage.local.set({ [key]: value });
         return true;
-    }
-
-    /**
-     * Sets a boolean preference in local storage.
-     * @deprecated Use setPreference instead.
-     *
-     * @param {string} key - The key of the preference to set.
-     * @param {boolean} value - The value to set for the preference.
-     * @returns {Promise<true | null>} Returns true if the preference is set successfully,
-     * or null if the preference key is invalid.
-     */
-    async setBooleanPreference(key: string, value: boolean): Promise<boolean | null> {
-        return this.setPreference(key, value);
     }
 
     /**
@@ -64,25 +54,17 @@ export class PrefService {
      * of the preference if valid, or null if the preference key is invalid.
      */
     async getPreference(key: string): Promise<any | null> {
-        if (!Object.keys(userPreferencesToDescriptions).includes(key)) {
+        if (!userPreferencesToDescriptions[key]) {
             console.error(`Preference ${key} is not valid`);
             return null;
         }
 
         const result = await chrome.storage.local.get(key);
+        // If preference is not set, return the default value
+        if (result[key] === undefined) {
+            return userPreferencesToDescriptions[key].defaultValue;
+        }
         return result[key];
-    }
-
-    /**
-     * Retrieves the boolean value of a specified preference from local storage.
-     * @deprecated Use getPreference instead.
-     *
-     * @param {string} key - The key of the preference to retrieve.
-     * @returns {Promise<boolean | null>} A promise that resolves to the boolean value
-     * of the preference if valid, or null if the preference key is invalid.
-     */
-    async getBooleanPreference(key: string): Promise<boolean | null> {
-        return this.getPreference(key);
     }
 
     /**
@@ -91,14 +73,23 @@ export class PrefService {
      * containing all user preferences.
      */
     async getAllPreferences(): Promise<{ [key: string]: any }> {
-        return await chrome.storage.local.get(Object.keys(userPreferencesToDescriptions));
+        const allKeys = Object.keys(userPreferencesToDescriptions);
+        const result = await chrome.storage.local.get(allKeys);
+
+        // Fill in default values for any unset preferences
+        for (const key of allKeys) {
+            if (result[key] === undefined) {
+                result[key] = userPreferencesToDescriptions[key].defaultValue;
+            }
+        }
+        return result;
     }
 
     /**
-     * Removes all boolean user preferences from local storage.
+     * Removes all user preferences from local storage.
      *
      * @async
-     * @returns {Promise<void>} A promise that resolves when all boolean user preferences
+     * @returns {Promise<void>} A promise that resolves when all user preferences
      * have been removed from local storage.
      */
     async removeAllPreferences(): Promise<void> {

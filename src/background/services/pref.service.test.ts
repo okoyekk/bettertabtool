@@ -1,11 +1,30 @@
-const userPreferencesToDescriptions: Record<string, string> = {
-    preferenceA: 'PreferenceA Description',
-    preferenceB: 'PreferenceB Description',
-    preferenceC: 'PreferenceC Description',
+interface PreferenceDescription<T> {
+    description: string;
+    defaultValue: T;
+    type: 'boolean' | 'string' | 'number';
+}
+
+const userPreferencesToDescriptions: { [K: string]: PreferenceDescription<any> } = {
+    preferenceA: {
+        description: 'PreferenceA Description',
+        defaultValue: false,
+        type: 'boolean',
+    },
+    preferenceB: {
+        description: 'PreferenceB Description',
+        defaultValue: 'auto',
+        type: 'string',
+    },
+    preferenceC: {
+        description: 'PreferenceC Description',
+        defaultValue: 123,
+        type: 'number',
+    },
 };
 
 jest.mock('../../constants', () => ({
     userPreferencesToDescriptions: userPreferencesToDescriptions,
+    ThemeMode: {} as any, // Mock ThemeMode if needed for types, though not directly used in PrefService
 }));
 
 import { PrefService } from './pref.service';
@@ -41,63 +60,100 @@ describe('PrefServiceTest', () => {
         jest.clearAllMocks();
     });
 
-    it('init_setsUndefinedPrefsToFalse', async () => {
+    it('init_setsUndefinedPrefsToDefaultValue', async () => {
         const prefService = new PrefService();
         chromeStorageLocalGetMock.mockResolvedValue({});
 
         await prefService.init();
-        expect(chromeStorageLocalSetMock).toHaveBeenCalledWith({ preferenceA: false });
+        expect(chromeStorageLocalSetMock).toHaveBeenCalledWith({
+            preferenceA: userPreferencesToDescriptions.preferenceA.defaultValue,
+        });
+        expect(chromeStorageLocalSetMock).toHaveBeenCalledWith({
+            preferenceB: userPreferencesToDescriptions.preferenceB.defaultValue,
+        });
+        expect(chromeStorageLocalSetMock).toHaveBeenCalledWith({
+            preferenceC: userPreferencesToDescriptions.preferenceC.defaultValue,
+        });
         expect(chromeStorageLocalSetMock).toHaveBeenCalledTimes(Object.keys(userPreferencesToDescriptions).length);
     });
 
     it('init_doesNotAlterExistingPrefs', async () => {
         const prefService = new PrefService();
-
-        let firstPrefKey = Object.keys(userPreferencesToDescriptions)[0];
-
-        chromeStorageLocalGetMock.mockResolvedValue({
-            firstPrefKey: true,
-        });
+        const existingPrefs = {
+            preferenceA: true,
+            preferenceB: 'dark',
+            preferenceC: 456,
+        };
+        chromeStorageLocalGetMock.mockResolvedValue(existingPrefs);
 
         await prefService.init();
-        expect(chromeStorageLocalSetMock).not.toHaveBeenCalledWith({ firstPrefKey: false });
-        expect(chromeStorageLocalSetMock).toHaveBeenCalledTimes(Object.keys(userPreferencesToDescriptions).length);
+        expect(chromeStorageLocalSetMock).not.toHaveBeenCalled();
     });
 
-    it('init_doesNotSetPrefsWhenAllExist', async () => {
-        const allPrefsSetToTrue = Object.fromEntries(
-            Object.keys(userPreferencesToDescriptions).map((key) => [key, true]),
+    it('setPreference_returnsNullForInvalidKey', async () => {
+        const prefService = new PrefService();
+        const result = await prefService.setPreference('invalidKey', true);
+        expect(result).toBeNull();
+        expect(console.error).toHaveBeenCalledWith('Preference invalidKey is not valid');
+        expect(chromeStorageLocalSetMock).not.toHaveBeenCalled();
+    });
+
+    it('setPreference_returnsNullForInvalidValueType', async () => {
+        const prefService = new PrefService();
+        const result = await prefService.setPreference('preferenceA', 'notABoolean');
+        expect(result).toBeNull();
+        expect(console.error).toHaveBeenCalledWith(
+            'Invalid type for preference preferenceA. Expected boolean, got string',
         );
-        chromeStorageLocalGetMock.mockResolvedValue(allPrefsSetToTrue);
-
-        const prefService = new PrefService();
-        await prefService.init();
-
         expect(chromeStorageLocalSetMock).not.toHaveBeenCalled();
     });
 
-    it('setBooleanPreference_returnsNullForInvalidKey', async () => {
+    it('setPreference_setsCorrectValueForValidKeyAndType', async () => {
         const prefService = new PrefService();
-        const result = await prefService.setBooleanPreference('invalidKey', true);
-        expect(result).toBeNull();
-        expect(chromeStorageLocalSetMock).not.toHaveBeenCalled();
+        const key = 'preferenceA';
+        const value = true;
+        const result = await prefService.setPreference(key, value);
+        expect(result).toBe(true);
+        expect(chromeStorageLocalSetMock).toHaveBeenCalledWith({ [key]: value });
     });
 
-    it('getBooleanPreference_returnsNullForInvalidKey', async () => {
+    it('getPreference_returnsNullForInvalidKey', async () => {
         const prefService = new PrefService();
-        const result = await prefService.getBooleanPreference('invalidKey');
+        const result = await prefService.getPreference('invalidKey');
         expect(result).toBeNull();
+        expect(console.error).toHaveBeenCalledWith('Preference invalidKey is not valid');
         expect(chromeStorageLocalGetMock).not.toHaveBeenCalled();
     });
 
-    it('getBooleanPreference_returnsCorrectValueForValidKey', async () => {
+    it('getPreference_returnsDefaultValueIfNotFound', async () => {
         const prefService = new PrefService();
-        const key = Object.keys(userPreferencesToDescriptions)[0];
+        const key = 'preferenceA';
+        chromeStorageLocalGetMock.mockResolvedValue({});
+        const result = await prefService.getPreference(key);
+        expect(result).toBe(userPreferencesToDescriptions[key].defaultValue);
+    });
+
+    it('getPreference_returnsCorrectValueForValidKey', async () => {
+        const prefService = new PrefService();
+        const key = 'preferenceA';
         const value = true;
         chromeStorageLocalGetMock.mockResolvedValue({ [key]: value });
-        const result = await prefService.getBooleanPreference(key);
+        const result = await prefService.getPreference(key);
         expect(result).toBe(value);
-        expect(chromeStorageLocalGetMock).toHaveBeenCalledWith(key);
+    });
+
+    it('getAllPreferences_returnsAllPreferencesWithDefaults', async () => {
+        const prefService = new PrefService();
+        chromeStorageLocalGetMock.mockResolvedValue({
+            preferenceA: true,
+        });
+
+        const allPreferences = await prefService.getAllPreferences();
+        expect(allPreferences).toEqual({
+            preferenceA: true,
+            preferenceB: userPreferencesToDescriptions.preferenceB.defaultValue,
+            preferenceC: userPreferencesToDescriptions.preferenceC.defaultValue,
+        });
     });
 
     it('removeAllPreferences_removesAllPreferences', async () => {
