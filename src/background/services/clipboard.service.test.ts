@@ -14,7 +14,7 @@ describe('ClipboardServiceTest', () => {
         };
 
         mockPrefService = {
-            getBooleanPreference: jest.fn(),
+            getPreference: jest.fn(),
         };
 
         setupMockChrome();
@@ -69,7 +69,7 @@ describe('ClipboardServiceTest', () => {
             id: TEST_TAB_ID,
             url: TEST_TAB_URL,
         });
-        mockPrefService.getBooleanPreference.mockResolvedValue(true);
+        mockPrefService.getPreference.mockResolvedValue(true);
 
         await clipboardService.copyCurrentTabUrl();
 
@@ -89,7 +89,7 @@ describe('ClipboardServiceTest', () => {
             id: TEST_TAB_ID,
             url: TEST_TAB_URL,
         });
-        mockPrefService.getBooleanPreference.mockResolvedValue(false);
+        mockPrefService.getPreference.mockResolvedValue(false);
 
         await clipboardService.copyCurrentTabUrl();
 

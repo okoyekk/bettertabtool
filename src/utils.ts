@@ -1,4 +1,4 @@
-import { userPreferencesToDescriptions } from './constants';
+import { userPreferencesToDescriptions, ThemeMode } from './constants';
 
 // compareFn for sorting preferences based on userPreferencesToDescriptions key order
 const preferenceCompareFn = (a: string, b: string): number => {
@@ -27,6 +27,42 @@ function detectContext() {
         return 'popup';
     }
     return 'unknown';
+}
+
+/**
+ * Detects the system's preferred color scheme.
+ * @returns {'light' | 'dark'} The system's preferred theme.
+ */
+export function detectSystemTheme(): 'light' | 'dark' {
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+        return 'dark';
+    }
+    return 'light';
+}
+
+/**
+ * Determines the effective theme based on user preference and system theme.
+ * @param themeMode The user's theme mode preference ('light', 'dark', or 'auto').
+ * @returns {'light' | 'dark'} The effective theme to be applied.
+ */
+export function getEffectiveTheme(themeMode: ThemeMode): 'light' | 'dark' {
+    if (themeMode === 'auto') {
+        return detectSystemTheme();
+    }
+    return themeMode;
+}
+
+/**
+ * Registers a listener for changes in the system's preferred color scheme.
+ * @param callback A function to be called when the system theme changes,
+ *                 receiving the new system theme ('light' or 'dark').
+ */
+export function onSystemThemeChange(callback: (theme: 'light' | 'dark') => void): void {
+    if (window.matchMedia) {
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (event) => {
+            callback(event.matches ? 'dark' : 'light');
+        });
+    }
 }
 
 export { preferenceCompareFn };

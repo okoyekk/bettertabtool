@@ -46,7 +46,7 @@ export class TabService {
             // Use provided group id if passed in, else add to current group
             let currentGroupId = groupId ? groupId : tab.groupId;
 
-            const shouldNewTabBeActive = (await this.prefService.getBooleanPreference('makeNewTabsActive')) ?? false;
+            const shouldNewTabBeActive = (await this.prefService.getPreference('makeNewTabsActive')) ?? false;
             // Create a new tab
             const newTab = await chrome.tabs.create({
                 openerTabId: tab.id,
@@ -193,8 +193,8 @@ export class TabService {
      * @returns {Promise<void>}
      */
     async mergeAllWindows(): Promise<void> {
-        const confirmMergeWindows = (await this.prefService.getBooleanPreference('confirmMergeWindows')) ?? false;
-        const mergeSameDisplayOnly = (await this.prefService.getBooleanPreference('mergeSameDisplayOnly')) ?? false;
+        const confirmMergeWindows = (await this.prefService.getPreference('confirmMergeWindows')) ?? false;
+        const mergeSameDisplayOnly = (await this.prefService.getPreference('mergeSameDisplayOnly')) ?? false;
 
         if (confirmMergeWindows) {
             // Do not merge if last trigger was over 1 second ago

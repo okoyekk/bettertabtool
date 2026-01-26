@@ -55,8 +55,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     const handleMessage = async () => {
         try {
             switch (message.type) {
-                case 'PREF_setBooleanPreference': {
-                    const result = await prefService.setBooleanPreference(message.key, message.value);
+                case 'PREF_setPreference': {
+                    const result = await prefService.setPreference(message.key, message.value);
                     if (result === null) {
                         return {
                             success: false,
@@ -67,8 +67,8 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
                     return { success: true, preferences: prefs };
                 }
 
-                case 'PREF_getBooleanPreference': {
-                    const value = await prefService.getBooleanPreference(message.key);
+                case 'PREF_getPreference': {
+                    const value = await prefService.getPreference(message.key);
                     if (value === null) {
                         return {
                             success: false,

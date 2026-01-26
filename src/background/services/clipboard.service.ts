@@ -29,7 +29,7 @@ export class ClipboardService {
                 },
                 args: [tab.url],
             });
-            if (await this.prefService.getBooleanPreference('showCopyNotification')) {
+            if (await this.prefService.getPreference('showCopyNotification')) {
                 this.showCopyNotification();
             }
         } catch (err) {

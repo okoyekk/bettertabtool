@@ -1,9 +1,37 @@
-const userPreferencesToDescriptions: Record<string, string> = {
-    showCopyNotification: 'Show notification on Copy Current Tab URL',
-    makeNewTabsActive: 'Make newly created tabs active',
-    confirmMergeWindows: 'Merge when the shortcut is pressed twice quickly',
-    mergeSameDisplayOnly: 'Merge windows only if they are on the same display',
-    darkMode: 'Enable dark mode',
+export type ThemeMode = 'light' | 'dark' | 'auto';
+
+interface PreferenceDescription<T> {
+    description: string;
+    defaultValue: T;
+    type: 'boolean' | 'string' | 'number'; // Extend as needed
+}
+
+const userPreferencesToDescriptions: { [K: string]: PreferenceDescription<any> } = {
+    showCopyNotification: {
+        description: 'Notify on Copy Tab URL',
+        defaultValue: false,
+        type: 'boolean',
+    },
+    makeNewTabsActive: {
+        description: 'New tabs are active',
+        defaultValue: false,
+        type: 'boolean',
+    },
+    confirmMergeWindows: {
+        description: 'Confirm merging with double press',
+        defaultValue: false,
+        type: 'boolean',
+    },
+    mergeSameDisplayOnly: {
+        description: 'Merge windows on same display only',
+        defaultValue: false,
+        type: 'boolean',
+    },
+    themeMode: {
+        description: 'Theme mode',
+        defaultValue: 'auto',
+        type: 'string',
+    },
 };
 
 export { userPreferencesToDescriptions };

@@ -111,7 +111,7 @@ describe('TabService', () => {
         mockChrome.windows.getAll.mockResolvedValue([mockWindow1, mockWindow2, mockWindow3, mockWindow4]);
 
         mockChrome.system.display.getInfo.mockResolvedValue([]);
-        prefService.getBooleanPreference.mockResolvedValue(false);
+        prefService.getPreference.mockResolvedValue(false);
     });
 
     afterEach(() => {
@@ -176,7 +176,7 @@ describe('TabService', () => {
         it('openNewTabInGroup_shouldOpenNewTabInExistingGroup', async () => {
             const mockActiveTab = { id: MOCK_ACTIVE_TAB_ID, url: TEST_URLS.OLD, groupId: MOCK_GROUP_ID };
             mockChrome.tabs.query.mockResolvedValue([mockActiveTab]);
-            prefService.getBooleanPreference.mockResolvedValue(true);
+            prefService.getPreference.mockResolvedValue(true);
 
             await tabService.openNewTabInGroup(TEST_URLS.NEW, MOCK_GROUP_ID);
 
@@ -194,7 +194,7 @@ describe('TabService', () => {
         it('openNewTabInGroup_shouldCreateNewGroupIfNoneExists', async () => {
             const mockActiveTab = { id: MOCK_ACTIVE_TAB_ID, url: TEST_URLS.OLD, groupId: TAB_GROUP_ID_NONE };
             mockChrome.tabs.query.mockResolvedValue([mockActiveTab]);
-            prefService.getBooleanPreference.mockResolvedValue(false);
+            prefService.getPreference.mockResolvedValue(false);
 
             await tabService.openNewTabInGroup(TEST_URLS.NEW);
 
@@ -228,7 +228,7 @@ describe('TabService', () => {
         it('openNewTabInGroup_shouldHandleNullPreferenceValue', async () => {
             const mockActiveTab = { id: MOCK_ACTIVE_TAB_ID, url: TEST_URLS.OLD, groupId: MOCK_GROUP_ID };
             mockChrome.tabs.query.mockResolvedValue([mockActiveTab]);
-            prefService.getBooleanPreference.mockResolvedValue(null);
+            prefService.getPreference.mockResolvedValue(null);
 
             await tabService.openNewTabInGroup(TEST_URLS.NEW, MOCK_GROUP_ID);
 
@@ -389,7 +389,7 @@ describe('TabService', () => {
         });
 
         it('mergeAllWindows_shouldHandleConfirmMergeWindowsPreference', async () => {
-            prefService.getBooleanPreference.mockImplementation((prefName) => {
+            prefService.getPreference.mockImplementation((prefName) => {
                 if (prefName === 'confirmMergeWindows') return Promise.resolve(true);
                 return Promise.resolve(false);
             });
@@ -402,7 +402,7 @@ describe('TabService', () => {
         });
 
         it('mergeAllWindows_shouldHandleNullPreferenceValues', async () => {
-            prefService.getBooleanPreference.mockResolvedValue(null);
+            prefService.getPreference.mockResolvedValue(null);
             mockChrome.windows.getAll.mockResolvedValue([
                 { id: 1, type: 'normal', tabs: [], state: 'normal' },
                 {
@@ -419,7 +419,7 @@ describe('TabService', () => {
         });
 
         it('mergeAllWindows_shouldHandleMergeSameDisplayOnlyPreference', async () => {
-            prefService.getBooleanPreference.mockImplementation((prefName) => {
+            prefService.getPreference.mockImplementation((prefName) => {
                 if (prefName === 'mergeSameDisplayOnly') return Promise.resolve(true);
                 return Promise.resolve(false);
             });
