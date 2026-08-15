@@ -269,7 +269,7 @@ export class ContextMenuService {
             await this.createOpenLinkInGroupContextMenu();
             // Sequentially add each tab group to context menu as a subitem of "Open Link in Group"
             for (const group of groups) {
-                if (group.title!.length > 0) {
+                if ((group.title?.length ?? 0) > 0) {
                     await new Promise<void>((resolve) => {
                         chrome.contextMenus.create(
                             {
