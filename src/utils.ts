@@ -43,11 +43,12 @@ export function detectSystemTheme(): 'light' | 'dark' {
 /**
  * Determines the effective theme based on user preference and system theme.
  * @param themeMode The user's theme mode preference ('light', 'dark', or 'auto').
+ * @param systemTheme The current system theme, used when themeMode is 'auto'.
  * @returns {'light' | 'dark'} The effective theme to be applied.
  */
-export function getEffectiveTheme(themeMode: ThemeMode): 'light' | 'dark' {
+export function getEffectiveTheme(themeMode: ThemeMode, systemTheme: 'light' | 'dark'): 'light' | 'dark' {
     if (themeMode === 'auto') {
-        return detectSystemTheme();
+        return systemTheme;
     }
     return themeMode;
 }

@@ -16,7 +16,7 @@ const App: React.FC = () => {
     const [preferences, setPreferences] = useState<{ [key: string]: any }>({});
     const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(detectSystemTheme());
 
-    const effectiveTheme = getEffectiveTheme((preferences['themeMode'] as ThemeMode) || 'auto');
+    const effectiveTheme = getEffectiveTheme((preferences['themeMode'] as ThemeMode) || 'auto', systemTheme);
 
     const theme = createTheme({
         typography: {
@@ -103,7 +103,12 @@ const App: React.FC = () => {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Box id="top" sx={{ p: 2, bgcolor: 'background.default' }}>
+            <Box
+                id="top"
+                data-testid="app-root"
+                data-theme={effectiveTheme}
+                sx={{ p: 2, bgcolor: 'background.default' }}
+            >
                 <Box sx={{ mb: 2, pl: 1 }}>
                     <Typography variant="h5" color="text.primary" sx={{ fontWeight: 700 }}>
                         BetterTabTool
