@@ -77,6 +77,7 @@ describe('ClipboardServiceTest', () => {
             'current-tab-url-created',
             expect.objectContaining({
                 type: 'basic',
+                iconUrl: 'assets/icon-512.png',
                 title: 'BetterTabTool',
                 message: 'Link copied to clipboard!',
             }),
