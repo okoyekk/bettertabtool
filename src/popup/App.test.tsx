@@ -2,9 +2,10 @@
  * @jest-environment jsdom
  */
 import React from 'react';
-import { render, screen, act } from '@testing-library/react';
+import { render, screen, act, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import App from './App';
+import { userPreferencesToDescriptions } from '../constants';
 
 type MediaQueryListener = (event: { matches: boolean }) => void;
 
@@ -77,5 +78,39 @@ describe('App theme wiring', () => {
         fireChange(true); // system switches to dark; should have no effect since themeMode is fixed
 
         expect(root).toHaveAttribute('data-theme', 'dark');
+    });
+});
+
+describe('App preference rows', () => {
+    const BOOLEAN_PREF_KEY = 'showCopyNotification';
+    const BOOLEAN_PREF_DESCRIPTION = userPreferencesToDescriptions[BOOLEAN_PREF_KEY].description;
+
+    beforeEach(() => {
+        mockMatchMedia(false);
+        mockPreferences({ [BOOLEAN_PREF_KEY]: false });
+    });
+
+    it('gives the checkbox an accessible name matching its preference description', async () => {
+        render(<App />);
+
+        expect(await screen.findByRole('checkbox', { name: BOOLEAN_PREF_DESCRIPTION })).toBeInTheDocument();
+    });
+
+    it('toggles the preference when the row label text is clicked, not just the checkbox itself', async () => {
+        render(<App />);
+
+        const checkbox = await screen.findByRole('checkbox', { name: BOOLEAN_PREF_DESCRIPTION });
+        expect(checkbox).not.toBeChecked();
+
+        fireEvent.click(screen.getByText(BOOLEAN_PREF_DESCRIPTION));
+
+        expect(chrome.runtime.sendMessage).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: 'PREF_setPreference',
+                key: BOOLEAN_PREF_KEY,
+                value: true,
+            }),
+            expect.any(Function),
+        );
     });
 });
