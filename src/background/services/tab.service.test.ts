@@ -343,7 +343,6 @@ describe('TabService', () => {
             state: WINDOW_STATE_NORMAL,
         };
         const TAB_MOVE_PARAMS = { windowId: TARGET_WINDOW_ID, index: MOVE_TO_END_INDEX };
-        const TABGROUP_MOVE_PARAMS = { windowId: TARGET_WINDOW_ID, index: MOVE_TO_END_INDEX };
 
         beforeEach(() => {
             mockChrome.windows.getCurrent.mockResolvedValue({ id: TARGET_WINDOW_ID, type: WINDOW_TYPE_NORMAL });
