@@ -11,12 +11,13 @@ import Checkbox from '@mui/material/Checkbox';
 import ToggleButton from '@mui/material/ToggleButton';
 import ToggleButtonGroup from '@mui/material/ToggleButtonGroup';
 import Box from '@mui/material/Box';
+import FormControlLabel from '@mui/material/FormControlLabel';
 
 const App: React.FC = () => {
     const [preferences, setPreferences] = useState<{ [key: string]: any }>({});
     const [systemTheme, setSystemTheme] = useState<'light' | 'dark'>(detectSystemTheme());
 
-    const effectiveTheme = getEffectiveTheme((preferences['themeMode'] as ThemeMode) || 'auto');
+    const effectiveTheme = getEffectiveTheme((preferences['themeMode'] as ThemeMode) || 'auto', systemTheme);
 
     const theme = createTheme({
         typography: {
@@ -103,7 +104,12 @@ const App: React.FC = () => {
     return (
         <ThemeProvider theme={theme}>
             <CssBaseline />
-            <Box id="top" sx={{ p: 2, bgcolor: 'background.default' }}>
+            <Box
+                id="top"
+                data-testid="app-root"
+                data-theme={effectiveTheme}
+                sx={{ p: 2, bgcolor: 'background.default' }}
+            >
                 <Box sx={{ mb: 2, pl: 1 }}>
                     <Typography variant="h5" color="text.primary" sx={{ fontWeight: 700 }}>
                         BetterTabTool
@@ -116,22 +122,22 @@ const App: React.FC = () => {
                 <List sx={{ width: '100%' }}>
                     {Object.keys(userPreferencesToDescriptions) // Iterate through descriptions for consistent order
                         .sort(preferenceCompareFn)
-                        .map((key: string) => (
-                            <ListItem key={key} alignItems="center" sx={{ px: 2, py: 1.5 }}>
-                                <ListItemText
-                                    primary={
-                                        <Typography
-                                            sx={{
-                                                fontWeight: 500,
-                                            }}
-                                            variant="body2"
-                                            color="text.primary"
-                                        >
-                                            {userPreferencesToDescriptions[key].description}
-                                        </Typography>
-                                    }
-                                />
-                                {key === 'themeMode' ? (
+                        .map((key: string) =>
+                            key === 'themeMode' ? (
+                                <ListItem key={key} alignItems="center" sx={{ px: 2, py: 1.5 }}>
+                                    <ListItemText
+                                        primary={
+                                            <Typography
+                                                sx={{
+                                                    fontWeight: 500,
+                                                }}
+                                                variant="body2"
+                                                color="text.primary"
+                                            >
+                                                {userPreferencesToDescriptions[key].description}
+                                            </Typography>
+                                        }
+                                    />
                                     <ToggleButtonGroup
                                         value={preferences[key] || 'auto'}
                                         exclusive
@@ -154,17 +160,35 @@ const App: React.FC = () => {
                                             Auto
                                         </ToggleButton>
                                     </ToggleButtonGroup>
-                                ) : (
-                                    <Checkbox
-                                        edge="end"
-                                        id={`${key}-toggle`}
-                                        checked={preferences[key] || false}
-                                        onChange={() => handlePreferenceChange(key, !preferences[key])}
-                                        size="small"
+                                </ListItem>
+                            ) : (
+                                <ListItem key={key} alignItems="center" sx={{ px: 2, py: 1.5 }}>
+                                    <FormControlLabel
+                                        sx={{ width: '100%', m: 0, justifyContent: 'space-between' }}
+                                        labelPlacement="start"
+                                        control={
+                                            <Checkbox
+                                                edge="end"
+                                                checked={preferences[key] || false}
+                                                onChange={() => handlePreferenceChange(key, !preferences[key])}
+                                                size="small"
+                                            />
+                                        }
+                                        label={
+                                            <Typography
+                                                sx={{
+                                                    fontWeight: 500,
+                                                }}
+                                                variant="body2"
+                                                color="text.primary"
+                                            >
+                                                {userPreferencesToDescriptions[key].description}
+                                            </Typography>
+                                        }
                                     />
-                                )}
-                            </ListItem>
-                        ))}
+                                </ListItem>
+                            ),
+                        )}
                 </List>
             </Box>
         </ThemeProvider>

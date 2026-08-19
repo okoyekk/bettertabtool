@@ -8,12 +8,12 @@ interface PreferenceDescription<T> {
 
 const userPreferencesToDescriptions: { [K: string]: PreferenceDescription<any> } = {
     showCopyNotification: {
-        description: 'Notify on Copy Tab URL',
+        description: 'Notify when copying tab URL',
         defaultValue: false,
         type: 'boolean',
     },
     makeNewTabsActive: {
-        description: 'New tabs are active',
+        description: 'Make new tabs active',
         defaultValue: false,
         type: 'boolean',
     },

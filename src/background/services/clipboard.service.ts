@@ -45,7 +45,7 @@ export class ClipboardService {
             'current-tab-url-created',
             {
                 type: 'basic',
-                iconUrl: '../assets/icon-512.png',
+                iconUrl: 'assets/icon-512.png',
                 title: 'BetterTabTool',
                 message: 'Link copied to clipboard!',
             },

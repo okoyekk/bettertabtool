@@ -93,7 +93,7 @@ export class PrefService {
      * have been removed from local storage.
      */
     async removeAllPreferences(): Promise<void> {
-        let prefs = [...Object.keys(userPreferencesToDescriptions)];
+        const prefs = [...Object.keys(userPreferencesToDescriptions)];
         return await chrome.storage.local.remove(prefs);
     }
 }

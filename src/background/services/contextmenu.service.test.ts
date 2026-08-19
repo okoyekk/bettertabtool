@@ -413,6 +413,23 @@ describe('ContextMenuService', () => {
             );
         });
 
+        it('updateGroupContextMenus_shouldSkipGroupsWithUndefinedTitleWithoutThrowing', async () => {
+            const groups = [
+                { id: 1, title: 'Group A' },
+                { id: 2, title: undefined },
+            ];
+            mockChrome.tabGroups.query.mockImplementation((_, callback) => callback(groups as any));
+
+            await expect(updateGroupContextMenus()).resolves.not.toThrow();
+
+            // Base menu + Group A only; the undefined-title group is skipped
+            expect(mockChrome.contextMenus.create).toHaveBeenCalledTimes(2);
+            expect(mockChrome.contextMenus.create).not.toHaveBeenCalledWith(
+                expect.objectContaining({ id: `${MENU_ITEM_BASE_GROUP}-2` }),
+                expect.any(Function),
+            );
+        });
+
         it('updateGroupContextMenus_shouldNotCreateMainMenuIfNoGroups', async () => {
             mockChrome.tabGroups.query.mockImplementation((_, callback) => callback([]));
             await updateGroupContextMenus();

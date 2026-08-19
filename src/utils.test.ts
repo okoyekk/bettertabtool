@@ -43,20 +43,19 @@ describe('utils', () => {
     });
 
     describe('getEffectiveTheme', () => {
-        it('should return "dark" when themeMode is "dark"', () => {
-            expect(getEffectiveTheme('dark')).toBe('dark');
+        it('should return "dark" when themeMode is "dark", regardless of system theme', () => {
+            expect(getEffectiveTheme('dark', 'light')).toBe('dark');
+            expect(getEffectiveTheme('dark', 'dark')).toBe('dark');
         });
 
-        it('should return "light" when themeMode is "light"', () => {
-            expect(getEffectiveTheme('light')).toBe('light');
+        it('should return "light" when themeMode is "light", regardless of system theme', () => {
+            expect(getEffectiveTheme('light', 'dark')).toBe('light');
+            expect(getEffectiveTheme('light', 'light')).toBe('light');
         });
 
-        it('should return system theme when themeMode is "auto"', () => {
-            matchMediaMock.mockReturnValue({ matches: true }); // System is dark
-            expect(getEffectiveTheme('auto')).toBe('dark');
-
-            matchMediaMock.mockReturnValue({ matches: false }); // System is light
-            expect(getEffectiveTheme('auto')).toBe('light');
+        it('should return the passed-in system theme when themeMode is "auto"', () => {
+            expect(getEffectiveTheme('auto', 'dark')).toBe('dark');
+            expect(getEffectiveTheme('auto', 'light')).toBe('light');
         });
     });
 
